@@ -8,7 +8,7 @@ package layouts
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "datablox/utils"
+import _ "datablox/utils" // keep for TwMerge if needed
 
 type Nav struct {
 	IsAdmin     bool
@@ -99,17 +99,7 @@ func Base(title string, nav Nav) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</title><link href=\"/assets/css/output.css\" rel=\"stylesheet\"><script src=\"https://unpkg.com/htmx.org@2.0.4\"></script><link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap\" rel=\"stylesheet\"><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		for _, c := range []string{"button", "card", "table", "badge"} {
-			templ_7745c5c3_Err = utils.ComponentScript(c).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</head><body class=\"min-h-full bg-[#fbfcff] text-slate-900 antialiased relative overflow-x-hidden\" hx-boost=\"true\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</title><link href=\"/assets/css/output.css\" rel=\"stylesheet\"><script src=\"https://unpkg.com/htmx.org@2.0.4\"></script><link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap\" rel=\"stylesheet\"><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><!-- component scripts removed: card/badge/button/table are CSS-only --></head><body class=\"min-h-full bg-[#fbfcff] text-slate-900 antialiased relative overflow-x-hidden\" hx-boost=\"true\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -117,36 +107,36 @@ func Base(title string, nav Nav) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<nav class=\"sticky top-0 z-40 border-b border-white/40 bg-white/70 backdrop-blur-xl\"><div class=\"max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between\"><a href=\"/\" class=\"flex items-center gap-2.5 group\"><div class=\"w-9 h-9 rounded-xl bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-sm font-bold shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform\">DB</div><span class=\"font-bold text-[17px] tracking-tight\">Datablox</span></a><div class=\"flex items-center gap-1.5\"><a href=\"/\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Home</a> <a href=\"/verify\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Verify</a> <a href=\"/dashboard\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Dashboard</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<nav class=\"sticky top-0 z-40 border-b border-white/40 bg-white/70 backdrop-blur-xl\"><div class=\"max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between\"><a href=\"/\" class=\"flex items-center gap-2.5 group\"><div class=\"w-9 h-9 rounded-xl bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-sm font-bold shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform\">DB</div><span class=\"font-bold text-[17px] tracking-tight\">Datablox</span></a><div class=\"flex items-center gap-1.5\"><a href=\"/\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Home</a> <a href=\"/verify\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Verify</a> <a href=\"/dashboard\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Dashboard</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if nav.DiscordName != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<a href=\"/dashboard/guilds\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">My Servers</a> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<a href=\"/dashboard/guilds\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">My Servers</a> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
 		if nav.IsAdmin {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<span class=\"hidden sm:inline text-sm font-medium text-slate-500 ml-2\">Hi, ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<span class=\"hidden sm:inline text-sm font-medium text-slate-500 ml-2\">Hi, ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(nav.DiscordName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 58, Col: 99}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 56, Col: 99}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</span> <a href=\"/dashboard\" class=\"ml-1 text-sm font-semibold text-white bg-gradient-to-r from-[#00A2FF] to-[#0055ff] px-4 py-2 rounded-full shadow-md shadow-blue-500/30 hover:shadow-lg hover:scale-[1.03] transition-all\">Dashboard</a> <a href=\"/logout\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Logout</a>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span> <a href=\"/dashboard\" class=\"ml-1 text-sm font-semibold text-white bg-gradient-to-r from-[#00A2FF] to-[#0055ff] px-4 py-2 rounded-full shadow-md shadow-blue-500/30 hover:shadow-lg hover:scale-[1.03] transition-all\">Dashboard</a> <a href=\"/logout\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Logout</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div></div></nav><main class=\"relative z-10 max-w-[1200px] mx-auto px-6 py-10 min-h-[calc(100vh-12rem)]\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div></div></nav><main class=\"relative z-10 max-w-[1200px] mx-auto px-6 py-10 min-h-[calc(100vh-12rem)]\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -154,7 +144,7 @@ func Base(title string, nav Nav) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</main><footer class=\"relative z-10 max-w-[1200px] mx-auto px-6 pb-10 mt-14\"><div class=\"rounded-2xl bg-gradient-to-r from-[#00A2FF]/10 via-[#5865F2]/10 to-[#00A2FF]/10 border border-slate-200/60 px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3\"><div class=\"flex items-center gap-2 text-sm text-slate-500\"><div class=\"w-6 h-6 rounded-lg bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-[9px] font-bold\">DB</div><span>Datablox — verify your Roblox account via Discord</span></div><div class=\"flex items-center gap-4\"><a href=\"/privacy\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Privacy</a><a href=\"/terms\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Terms</a><span class=\"w-px h-4 bg-slate-200\"></span><a href=\"/verify\" class=\"text-sm font-medium text-blue-600 hover:text-blue-700\">How to verify →</a></div></div></footer></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</main><footer class=\"relative z-10 max-w-[1200px] mx-auto px-6 pb-10 mt-14\"><div class=\"rounded-2xl bg-gradient-to-r from-[#00A2FF]/10 via-[#5865F2]/10 to-[#00A2FF]/10 border border-slate-200/60 px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3\"><div class=\"flex items-center gap-2 text-sm text-slate-500\"><div class=\"w-6 h-6 rounded-lg bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-[9px] font-bold\">DB</div><span>Datablox — verify your Roblox account via Discord</span></div><div class=\"flex items-center gap-4\"><a href=\"/privacy\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Privacy</a><a href=\"/terms\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Terms</a><span class=\"w-px h-4 bg-slate-200\"></span><a href=\"/verify\" class=\"text-sm font-medium text-blue-600 hover:text-blue-700\">How to verify →</a></div></div></footer></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

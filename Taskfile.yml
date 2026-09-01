@@ -32,9 +32,14 @@ tasks:
     cmds:
       - go run ./cmd/bot
 
+  bot:web:
+    internal: true
+    cmds:
+      - DISABLE_BOT_WEB=1 go run ./cmd/bot
+
   dev:
     desc: Full HMR on (web HMR + bot stable + tunnel - HMR only for web)
-    deps: [web, bot, cloudflared]
+    deps: [web, bot:web, cloudflared]
 
   prod:
     desc: Production build (templ + tailwind minify + binary)

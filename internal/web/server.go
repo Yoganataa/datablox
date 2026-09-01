@@ -394,19 +394,22 @@ func (s *Server) handleDiscordCallback(w http.ResponseWriter, r *http.Request) {
 	val, ok := s.pending[state]
 	s.mu.Unlock()
 	if !ok {
-		http.Error(w, "invalid state", http.StatusBadRequest)
-		return
-	}
-	if time.Now().After(val.Expires) {
+		// HMR restart or separate process: fallback to cookie state (web HMR loses pending map but cookie survives)
+		if c, err := r.Cookie("oauth_state"); err != nil || c.Value != state {
+			http.Error(w, "invalid state", http.StatusBadRequest)
+			return
+		}
+	} else if time.Now().After(val.Expires) {
 		s.mu.Lock()
 		delete(s.pending, state)
 		s.mu.Unlock()
 		http.Error(w, "state expired", http.StatusBadRequest)
 		return
+	} else {
+		s.mu.Lock()
+		delete(s.pending, state)
+		s.mu.Unlock()
 	}
-	s.mu.Lock()
-	delete(s.pending, state)
-	s.mu.Unlock()
 
 	redirectURI := strings.TrimRight(s.cfg.WebURL, "/") + "/auth/discord/callback"
 	data := url.Values{}
@@ -499,28 +502,41 @@ func (s *Server) handleRobloxCallback(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing state/code", http.StatusBadRequest)
 		return
 	}
+	var verifier string
+	var discordIDFromState string
 	s.mu.Lock()
 	val, ok := s.pending[state]
 	s.mu.Unlock()
-	if !ok {
-		http.Error(w, "invalid state", http.StatusBadRequest)
-		return
-	}
-	if time.Now().After(val.Expires) {
+	if ok {
+		if time.Now().After(val.Expires) {
+			s.mu.Lock()
+			delete(s.pending, state)
+			s.mu.Unlock()
+			http.Error(w, "state expired", http.StatusBadRequest)
+			return
+		}
 		s.mu.Lock()
 		delete(s.pending, state)
 		s.mu.Unlock()
-		http.Error(w, "state expired", http.StatusBadRequest)
-		return
+		verifier = val.Verifier
+		discordIDFromState = val.DiscordID
+	} else {
+		if c, err := r.Cookie("oauth_state"); err != nil || c.Value != state {
+			http.Error(w, "invalid state", http.StatusBadRequest)
+			return
+		}
+		if c, err := r.Cookie("code_verifier"); err == nil {
+			verifier = c.Value
+		}
 	}
-	s.mu.Lock()
-	delete(s.pending, state)
-	s.mu.Unlock()
+	if verifier == "" {
+		if c, err := r.Cookie("code_verifier"); err == nil {
+			verifier = c.Value
+		}
+	}
+	// make val available for discordID fallback below
+	val = pendingOAuth{Verifier: verifier, DiscordID: discordIDFromState}
 
-	verifier := val.Verifier
-	if c, err := r.Cookie("code_verifier"); err == nil && verifier == "" {
-		verifier = c.Value
-	}
 	redirectURI := strings.TrimRight(s.cfg.WebURL, "/") + "/auth/roblox/callback"
 	data := url.Values{}
 	data.Set("client_id", s.cfg.RobloxClientID)

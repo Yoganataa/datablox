@@ -1,6 +1,6 @@
 package layouts
 
-import "datablox/utils"
+import _ "datablox/utils" // keep for TwMerge if needed
 
 type Nav struct {
 	IsAdmin     bool
@@ -35,9 +35,7 @@ templ Base(title string, nav Nav) {
 			<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 			<link rel="preconnect" href="https://fonts.googleapis.com"/>
 			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-			for _, c := range []string{"button", "card", "table", "badge"} {
-				@utils.ComponentScript(c)
-			}
+			<!-- component scripts removed: card/badge/button/table are CSS-only -->
 		</head>
 		<body class="min-h-full bg-[#fbfcff] text-slate-900 antialiased relative overflow-x-hidden" hx-boost="true">
 			@renderBlobs()

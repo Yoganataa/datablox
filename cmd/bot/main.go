@@ -42,16 +42,20 @@ func main() {
 	refresh := scheduler.New(log, svc, cfg.RefreshInterval, true)
 	defer refresh.Stop()
 
-	// Web dashboard (Bloxlink-like) — cloudflared tunnel provides https for OAuth callbacks
-	webSrv, err := web.New(cfg, st, log, bot.Session())
-	if err != nil {
-		log.Warn("web dashboard failed to start", "err", err)
+	// Web dashboard (Bloxlink-like) — skip when running alongside `task web` to avoid :8003 conflict and lost OAuth state
+	if os.Getenv("DISABLE_BOT_WEB") != "1" {
+		webSrv, err := web.New(cfg, st, log, bot.Session())
+		if err != nil {
+			log.Warn("web dashboard failed to start", "err", err)
+		} else {
+			go func() {
+				if err := webSrv.Start(); err != nil {
+					log.Error("web dashboard error", "err", err)
+				}
+			}()
+		}
 	} else {
-		go func() {
-			if err := webSrv.Start(); err != nil {
-				log.Error("web dashboard error", "err", err)
-			}
-		}()
+		log.Info("web dashboard disabled in bot (DISABLE_BOT_WEB=1) — use task web for HMR")
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
