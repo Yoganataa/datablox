@@ -50,6 +50,10 @@ templ Base(title string, nav Nav) {
 					<div class="flex items-center gap-1.5">
 						<a href="/" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Home</a>
 						<a href="/verify" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Verify</a>
+						<a href="/dashboard" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Dashboard</a>
+						if nav.DiscordName != "" {
+							<a href="/dashboard/guilds" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">My Servers</a>
+						}
 						if nav.IsAdmin {
 							<span class="hidden sm:inline text-sm font-medium text-slate-500 ml-2">Hi, { nav.DiscordName }</span>
 							<a href="/dashboard" class="ml-1 text-sm font-semibold text-white bg-gradient-to-r from-[#00A2FF] to-[#0055ff] px-4 py-2 rounded-full shadow-md shadow-blue-500/30 hover:shadow-lg hover:scale-[1.03] transition-all">Dashboard</a>

@@ -49,6 +49,14 @@ type VerifiedUser struct {
 	UpdatedAt      time.Time
 }
 
+type DiscordGuild struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Icon        string `json:"icon"`
+	Permissions int64  `json:"permissions"`
+	Owner       bool   `json:"owner"`
+}
+
 type GuildBinding struct {
 	ID               int64
 	GuildID          string

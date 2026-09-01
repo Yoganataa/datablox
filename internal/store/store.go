@@ -23,6 +23,7 @@ type Store interface {
 	GetGuildConfig(ctx context.Context, guildID string) (model.GuildConfig, error)
 	SetGuildConfig(ctx context.Context, cfg model.GuildConfig) error
 	ListGuildConfigs(ctx context.Context) ([]model.GuildConfig, error)
+	ListGuildConfigsByIDs(ctx context.Context, ids []string) ([]model.GuildConfig, error)
 	// Feed / vote (1 channel, 1 vote message paginated 25/halaman, top10 dari vote)
 	HasVote(ctx context.Context, messageID, userID string, universeID int64) (bool, error)
 	GetUserVotes(ctx context.Context, messageID, userID string) ([]int64, error)

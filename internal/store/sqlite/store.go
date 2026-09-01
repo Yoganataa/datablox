@@ -344,6 +344,37 @@ func (s *Store) ListGuildConfigs(ctx context.Context) ([]model.GuildConfig, erro
 	return out, rows.Err()
 }
 
+func (s *Store) ListGuildConfigsByIDs(ctx context.Context, ids []string) ([]model.GuildConfig, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	placeholders := make([]string, len(ids))
+	args := make([]any, len(ids))
+	for i, id := range ids {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+	query := `SELECT guild_id, channel_id, vote_message_id, top_message_id, verify_channel_id, verify_message_id, default_genre FROM guild_config WHERE guild_id IN (` + placeholders[0]
+	for _, ph := range placeholders[1:] {
+		query += "," + ph
+	}
+	query += ")"
+	rows, err := s.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []model.GuildConfig
+	for rows.Next() {
+		var cfg model.GuildConfig
+		if err := rows.Scan(&cfg.GuildID, &cfg.ChannelID, &cfg.VoteMessageID, &cfg.TopMessageID, &cfg.VerifyChannelID, &cfg.VerifyMessageID, &cfg.DefaultGenre); err != nil {
+			return nil, err
+		}
+		out = append(out, cfg)
+	}
+	return out, rows.Err()
+}
+
 func (s *Store) AddVote(ctx context.Context, v model.Vote) error {
 	_, err := s.db.ExecContext(ctx, `
 		INSERT INTO poll_votes (message_id, user_id, universe_id, emoji)

@@ -53,6 +53,8 @@ func New(cfg *config.Config, st store.Store, log *slog.Logger, discord *discordg
 func (s *Server) routes() {
 	s.mux.HandleFunc("/", s.handleRoot)
 	s.mux.HandleFunc("/dashboard", s.handleDashboard)
+	s.mux.HandleFunc("/dashboard/guilds", s.handleGuilds)
+	s.mux.HandleFunc("/dashboard/guild/", s.handleGuildDetail)
 	s.mux.HandleFunc("/verify", s.handleVerifyPage)
 	s.mux.HandleFunc("/privacy", s.handlePrivacy)
 	s.mux.HandleFunc("/privacy-policy", s.handlePrivacy)
@@ -98,6 +100,47 @@ func (s *Server) discordName(r *http.Request) string {
 func (s *Server) cookieSecure() bool {
 	return strings.HasPrefix(s.cfg.WebURL, "https://")
 }
+func (s *Server) isGuildAdmin(r *http.Request, guildID string) bool {
+	// Super admin bypass
+	if s.isAdmin(r) {
+		return true
+	}
+	tok := ""
+	if c, err := r.Cookie("discord_token"); err == nil {
+		tok = c.Value
+	}
+	if tok == "" {
+		return false
+	}
+	guilds := s.fetchUserGuilds(tok)
+	for _, g := range guilds {
+		if g.ID == guildID && (g.Permissions&0x20 != 0 || g.Permissions&0x8 != 0) {
+			return true
+		}
+	}
+	return false
+}
+
+type discordGuild = model.DiscordGuild
+
+func (s *Server) fetchUserGuilds(token string) []model.DiscordGuild {
+	if token == "" {
+		return nil
+	}
+	req, _ := http.NewRequest("GET", "https://discord.com/api/users/@me/guilds", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+	var guilds []model.DiscordGuild
+	if err := json.NewDecoder(resp.Body).Decode(&guilds); err != nil {
+		return nil
+	}
+	return guilds
+}
+
 
 func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
@@ -118,6 +161,71 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	voteCount, _ := s.store.CountVotes(r.Context())
 	verifiedCount, _ := s.store.CountVerifiedUsers(r.Context())
 	_ = pages.Dashboard(guildCount, expCount, voteCount, verifiedCount, s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+}
+
+func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {
+	if _, err := r.Cookie("discord_id"); err != nil {
+		http.Redirect(w, r, "/auth/discord/login", http.StatusFound)
+		return
+	}
+	tok := ""
+	if c, err := r.Cookie("discord_token"); err == nil {
+		tok = c.Value
+	}
+	userGuilds := s.fetchUserGuilds(tok)
+	// Build admin guild IDs map
+	adminIDs := make(map[string]bool)
+	var adminGuilds []model.DiscordGuild
+	for _, g := range userGuilds {
+		if g.Permissions&0x20 != 0 || g.Permissions&0x8 != 0 || g.Owner {
+			adminIDs[g.ID] = true
+			adminGuilds = append(adminGuilds, g)
+		}
+	}
+	// Fetch configs for admin guilds only (batched)
+	configs, _ := s.store.ListGuildConfigsByIDs(r.Context(), keys(adminIDs))
+	cfgMap := make(map[string]model.GuildConfig, len(configs))
+	for _, c := range configs {
+		cfgMap[c.GuildID] = c
+	}
+	_ = pages.Guilds(adminGuilds, cfgMap, s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+}
+
+func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
+	guildID := strings.TrimPrefix(r.URL.Path, "/dashboard/guild/")
+	if idx := strings.Index(guildID, "/"); idx >= 0 {
+		guildID = guildID[:idx]
+	}
+	if guildID == "" {
+		http.NotFound(w, r)
+		return
+	}
+	if _, err := r.Cookie("discord_id"); err != nil {
+		http.Redirect(w, r, "/auth/discord/login", http.StatusFound)
+		return
+	}
+	if !s.isGuildAdmin(r, guildID) {
+		http.Error(w, "you are not admin of this server", http.StatusForbidden)
+		return
+	}
+	cfg, _ := s.store.GetGuildConfig(r.Context(), guildID)
+	bindings, _ := s.store.ListBindings(r.Context(), guildID)
+	// Fetch guild name via Discord bot if available
+	guildName := guildID
+	if s.discord != nil {
+		if g, err := s.discord.Guild(guildID); err == nil && g != nil {
+			guildName = g.Name
+		}
+	}
+	_ = pages.GuildDetail(guildID, guildName, cfg, bindings, s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+}
+
+func keys(m map[string]bool) []string {
+	ks := make([]string, 0, len(m))
+	for k := range m {
+		ks = append(ks, k)
+	}
+	return ks
 }
 
 func (s *Server) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
@@ -279,12 +387,14 @@ func (s *Server) handleDiscordCallback(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(resp2.Body).Decode(&user)
 	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: user.ID, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: user.Username, Path: "/", MaxAge: 86400 * 7, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	http.SetCookie(w, &http.Cookie{Name: "discord_token", Value: tok.AccessToken, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.Redirect(w, r, "/dashboard?discord=ok", http.StatusFound)
 }
 
 func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	http.SetCookie(w, &http.Cookie{Name: "discord_token", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.Redirect(w, r, "/dashboard", http.StatusFound)
 }
 

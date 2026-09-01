@@ -47,7 +47,17 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col gap-8\"><div class=\"rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0055ff] text-white p-8 sm:p-10 shadow-2xl shadow-slate-900/30 relative overflow-hidden\"><div class=\"absolute -right-10 -top-10 w-44 h-44 rounded-full bg-[#00A2FF]/30 blur-3xl\"></div><div class=\"absolute -left-8 -bottom-14 w-40 h-40 rounded-full bg-[#5865F2]/30 blur-3xl\"></div><div class=\"relative\"><div class=\"inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-3 py-1 text-xs font-semibold\"><span class=\"w-2 h-2 rounded-full bg-emerald-400 animate-pulse\"></span> Bot is online</div><h1 class=\"mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight\">Datablox</h1><p class=\"mt-2 text-white/70 text-sm sm:text-base\">Server manager bot — Roblox catalog, voting, and Bloxlink-like verification. Manage your servers via Discord.</p><div class=\"mt-6 flex flex-wrap gap-3\"><a href=\"https://discord.com/oauth2/authorize?client_id=1543786904447750194&permissions=8&scope=bot%20applications.commands\" target=\"_blank\" rel=\"noreferrer\" class=\"inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 px-5 py-2.5 text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all\">Invite Bot <svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13 7l5 5m0 0l-5 5m5-5H6\"></path></svg></a> <a href=\"/verify\" class=\"inline-flex items-center gap-2 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white px-5 py-2.5 text-sm font-semibold hover:bg-white/20 transition-colors\">How to verify</a></div></div></div><div class=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col gap-8\"><div class=\"rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0055ff] text-white p-8 sm:p-10 shadow-2xl shadow-slate-900/30 relative overflow-hidden\"><div class=\"absolute -right-10 -top-10 w-44 h-44 rounded-full bg-[#00A2FF]/30 blur-3xl\"></div><div class=\"absolute -left-8 -bottom-14 w-40 h-40 rounded-full bg-[#5865F2]/30 blur-3xl\"></div><div class=\"relative\"><div class=\"inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-3 py-1 text-xs font-semibold\"><span class=\"w-2 h-2 rounded-full bg-emerald-400 animate-pulse\"></span> Bot is online</div><h1 class=\"mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight\">Datablox</h1><p class=\"mt-2 text-white/70 text-sm sm:text-base\">Server manager bot — Roblox catalog, voting, and Bloxlink-like verification. Manage your servers via Discord.</p><div class=\"mt-6 flex flex-wrap gap-3\"><a href=\"https://discord.com/oauth2/authorize?client_id=1543786904447750194&permissions=8&scope=bot%20applications.commands\" target=\"_blank\" rel=\"noreferrer\" class=\"inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 px-5 py-2.5 text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all\">Invite Bot <svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13 7l5 5m0 0l-5 5m5-5H6\"></path></svg></a> <a href=\"/verify\" class=\"inline-flex items-center gap-2 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white px-5 py-2.5 text-sm font-semibold hover:bg-white/20 transition-colors\">How to verify</a> ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if discordName != "" {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<a href=\"/dashboard/guilds\" class=\"inline-flex items-center gap-2 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white px-5 py-2.5 text-sm font-semibold hover:bg-white/20 transition-colors\">My Servers</a>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div></div><div class=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -67,7 +77,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -107,7 +117,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 							}()
 						}
 						ctx = templ.InitializeContext(ctx)
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "Commands ")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "Commands ")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -117,7 +127,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -133,7 +143,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 							}()
 						}
 						ctx = templ.InitializeContext(ctx)
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "4 commands")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "4 commands")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -149,7 +159,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, " ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -165,7 +175,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 						}()
 					}
 					ctx = templ.InitializeContext(ctx)
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm\"><div class=\"rounded-xl bg-slate-50 border border-slate-200/60 p-4\"><div class=\"font-mono font-bold text-slate-900\">/datablox</div><div class=\"text-slate-500 mt-1\">Browse experiences — panel with filters and pagination.</div></div><div class=\"rounded-xl bg-slate-50 border border-slate-200/60 p-4\"><div class=\"font-mono font-bold text-slate-900\">/add &lt;url&gt;</div><div class=\"text-slate-500 mt-1\">Add a Roblox experience to the catalog.</div></div><div class=\"rounded-xl bg-slate-50 border border-slate-200/60 p-4\"><div class=\"font-mono font-bold text-slate-900\">/search &lt;query&gt;</div><div class=\"text-slate-500 mt-1\">Search the catalog with FTS.</div></div><div class=\"rounded-xl bg-slate-50 border border-slate-200/60 p-4\"><div class=\"font-mono font-bold text-slate-900\">/config</div><div class=\"text-slate-500 mt-1\">Configure feed and verify channels (per server).</div></div></div>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm\"><div class=\"rounded-xl bg-slate-50 border border-slate-200/60 p-4\"><div class=\"font-mono font-bold text-slate-900\">/datablox</div><div class=\"text-slate-500 mt-1\">Browse experiences — panel with filters and pagination.</div></div><div class=\"rounded-xl bg-slate-50 border border-slate-200/60 p-4\"><div class=\"font-mono font-bold text-slate-900\">/add &lt;url&gt;</div><div class=\"text-slate-500 mt-1\">Add a Roblox experience to the catalog.</div></div><div class=\"rounded-xl bg-slate-50 border border-slate-200/60 p-4\"><div class=\"font-mono font-bold text-slate-900\">/search &lt;query&gt;</div><div class=\"text-slate-500 mt-1\">Search the catalog with FTS.</div></div><div class=\"rounded-xl bg-slate-50 border border-slate-200/60 p-4\"><div class=\"font-mono font-bold text-slate-900\">/config</div><div class=\"text-slate-500 mt-1\">Configure feed and verify channels (per server).</div></div></div>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -217,7 +227,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 							}()
 						}
 						ctx = templ.InitializeContext(ctx)
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "Server Management ")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "Server Management ")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -233,7 +243,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, " ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -249,30 +259,30 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 						}()
 					}
 					ctx = templ.InitializeContext(ctx)
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<p class=\"text-sm text-slate-600 leading-relaxed\">Each Discord server configures its own <b>feed channel</b> (vote + top10 + announcements) and <b>verify channel</b> (welcome + Verify button) via <code class=\"bg-slate-100 px-1.5 py-0.5 rounded text-xs\">/config</code> in Discord. No server list is shown here to protect privacy. Server admins manage their guild via Discord permissions.</p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<p class=\"text-sm text-slate-600 leading-relaxed\">Each Discord server configures its own <b>feed channel</b> (vote + top10 + announcements) and <b>verify channel</b> (welcome + Verify button) via <code class=\"bg-slate-100 px-1.5 py-0.5 rounded text-xs\">/config</code> in Discord. No server list is shown here to protect privacy. Server admins manage their guild via Discord permissions.</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					if isAdmin {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"mt-4 rounded-xl bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900\">Signed in as <b>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"mt-4 rounded-xl bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900\">Signed in as <b>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var12 string
 						templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(discordName)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/dashboard.templ`, Line: 77, Col: 36}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/dashboard.templ`, Line: 82, Col: 36}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</b> — you have super-admin access. Use Discord <code class=\"bg-white px-1 py-0.5 rounded\">/config</code> in each server to manage.</div>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</b> — you have super-admin access. Use Discord <code class=\"bg-white px-1 py-0.5 rounded\">/config</code> in each server to manage.</div>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					} else {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"mt-4 text-sm text-slate-500\">Tip: invite the bot, then run <code class=\"bg-slate-100 px-1.5 py-0.5 rounded\">/config</code> in your server's admin channel.</div>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"mt-4 text-sm text-slate-500\">Tip: invite the bot, then run <code class=\"bg-slate-100 px-1.5 py-0.5 rounded\">/config</code> in your server's admin channel.</div>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -289,7 +299,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -324,7 +334,7 @@ func statCard(label string, value int, gradient string) templ.Component {
 			templ_7745c5c3_Var13 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"relative overflow-hidden rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<div class=\"relative overflow-hidden rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -333,7 +343,7 @@ func statCard(label string, value int, gradient string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<div class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<div class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -346,33 +356,33 @@ func statCard(label string, value int, gradient string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\"></div><div class=\"text-sm font-medium text-slate-500\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\"></div><div class=\"text-sm font-medium text-slate-500\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/dashboard.templ`, Line: 93, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/dashboard.templ`, Line: 98, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div><div class=\"mt-3 text-4xl font-extrabold tracking-tight\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</div><div class=\"mt-3 text-4xl font-extrabold tracking-tight\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(value)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/dashboard.templ`, Line: 94, Col: 66}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/dashboard.templ`, Line: 99, Col: 66}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
