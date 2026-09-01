@@ -57,6 +57,17 @@ type DiscordGuild struct {
 	Owner       bool   `json:"owner"`
 }
 
+type ReactionRole struct {
+	ID        int64
+	GuildID   string
+	ChannelID string
+	MessageID string
+	Emoji     string
+	RoleID    string
+	Mode      string
+	CreatedAt time.Time
+}
+
 type GuildBinding struct {
 	ID               int64
 	GuildID          string

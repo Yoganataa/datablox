@@ -63,6 +63,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/api/health", s.handleHealth)
 	s.mux.HandleFunc("/api/guilds", s.handleListGuilds)
 	s.mux.HandleFunc("/api/bindings", s.handleBindings)
+	s.mux.HandleFunc("/api/reaction-roles", s.handleReactionRoles)
 	s.mux.HandleFunc("/auth/discord/login", s.handleDiscordLogin)
 	s.mux.HandleFunc("/auth/discord/callback", s.handleDiscordCallback)
 	s.mux.HandleFunc("/auth/roblox/login", s.handleRobloxLogin)
@@ -147,7 +148,7 @@ func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	_ = pages.Landing(s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+	_ = pages.Landing(s.isAdmin(r), s.discordName(r), s.cfg.DiscordClientID).Render(r.Context(), w)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -295,6 +296,64 @@ func (s *Server) handleBindings(w http.ResponseWriter, r *http.Request) {
 		var id int64
 		fmt.Sscan(idStr, &id)
 		if err := s.store.DeleteBinding(r.Context(), id, guildID); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (s *Server) handleReactionRoles(w http.ResponseWriter, r *http.Request) {
+	if !s.isAdmin(r) {
+		http.Error(w, "admin only", http.StatusUnauthorized)
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		guildID := r.URL.Query().Get("guild_id")
+		if guildID == "" {
+			http.Error(w, "guild_id required", http.StatusBadRequest)
+			return
+		}
+		if !s.isGuildAdmin(r, guildID) {
+			http.Error(w, "not admin of this guild", http.StatusForbidden)
+			return
+		}
+		roles, _ := s.store.ListReactionRoles(r.Context(), guildID)
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(roles)
+	case http.MethodPost:
+		var rr model.ReactionRole
+		if err := json.NewDecoder(r.Body).Decode(&rr); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if !s.isGuildAdmin(r, rr.GuildID) {
+			http.Error(w, "not admin of this guild", http.StatusForbidden)
+			return
+		}
+		if rr.Mode == "" {
+			rr.Mode = "normal"
+		}
+		id, err := s.store.CreateReactionRole(r.Context(), rr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]int64{"id": id})
+	case http.MethodDelete:
+		guildID := r.URL.Query().Get("guild_id")
+		idStr := r.URL.Query().Get("id")
+		var id int64
+		fmt.Sscan(idStr, &id)
+		if !s.isGuildAdmin(r, guildID) {
+			http.Error(w, "not admin of this guild", http.StatusForbidden)
+			return
+		}
+		if err := s.store.DeleteReactionRole(r.Context(), id, guildID); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

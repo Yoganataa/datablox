@@ -25,7 +25,7 @@ func New(cfg *config.Config, log *slog.Logger, svc *service.ExperienceService) (
 	if err != nil {
 		return nil, err
 	}
-	sess.Identify.Intents = discordgo.IntentsGuilds
+	sess.Identify.Intents = discordgo.IntentsGuilds | discordgo.IntentsGuildMessageReactions
 	return &Bot{
 		cfg:    cfg,
 		log:    log,
@@ -39,6 +39,8 @@ func (b *Bot) Session() *discordgo.Session { return b.sess }
 
 func (b *Bot) Run(ctx context.Context) error {
 	b.sess.AddHandler(b.onInteraction)
+	b.sess.AddHandler(b.onReactionAdd)
+	b.sess.AddHandler(b.onReactionRemove)
 	if err := b.sess.Open(); err != nil {
 		return fmt.Errorf("open discord session: %w", err)
 	}

@@ -41,5 +41,9 @@ type Store interface {
 	CreateBinding(ctx context.Context, b model.GuildBinding) (int64, error)
 	ListBindings(ctx context.Context, guildID string) ([]model.GuildBinding, error)
 	DeleteBinding(ctx context.Context, id int64, guildID string) error
+	CreateReactionRole(ctx context.Context, r model.ReactionRole) (int64, error)
+	ListReactionRoles(ctx context.Context, guildID string) ([]model.ReactionRole, error)
+	ListReactionRolesByMessage(ctx context.Context, guildID, messageID string) ([]model.ReactionRole, error)
+	DeleteReactionRole(ctx context.Context, id int64, guildID string) error
 	Close() error
 }

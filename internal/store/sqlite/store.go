@@ -101,6 +101,17 @@ func (s *Store) migrate() error {
 			}
 		}
 	}
+	if sqlB, err := migrationsFS.ReadFile("migrations/0007_reaction_roles.sql"); err == nil {
+		for _, stmt := range strings.Split(string(sqlB), ";") {
+			stmt = strings.TrimSpace(stmt)
+			if stmt == "" {
+				continue
+			}
+			if _, err := s.db.Exec(stmt); err != nil && !strings.Contains(err.Error(), "already exists") && !strings.Contains(err.Error(), "duplicate column name") {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
@@ -604,6 +615,61 @@ func (s *Store) ListBindings(ctx context.Context, guildID string) ([]model.Guild
 
 func (s *Store) DeleteBinding(ctx context.Context, id int64, guildID string) error {
 	_, err := s.db.ExecContext(ctx, "DELETE FROM guild_bindings WHERE id = ? AND guild_id = ?", id, guildID)
+	return err
+}
+
+func (s *Store) CreateReactionRole(ctx context.Context, r model.ReactionRole) (int64, error) {
+	res, err := s.db.ExecContext(ctx, "INSERT INTO reaction_roles (guild_id, channel_id, message_id, emoji, role_id, mode) VALUES (?, ?, ?, ?, ?, ?)", r.GuildID, r.ChannelID, r.MessageID, r.Emoji, r.RoleID, r.Mode)
+	if err != nil {
+		return 0, err
+	}
+	return res.LastInsertId()
+}
+
+func (s *Store) ListReactionRoles(ctx context.Context, guildID string) ([]model.ReactionRole, error) {
+	rows, err := s.db.QueryContext(ctx, "SELECT id, guild_id, channel_id, message_id, emoji, role_id, mode, created_at FROM reaction_roles WHERE guild_id = ? ORDER BY created_at DESC", guildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []model.ReactionRole
+	for rows.Next() {
+		var r model.ReactionRole
+		var created sql.NullString
+		if err := rows.Scan(&r.ID, &r.GuildID, &r.ChannelID, &r.MessageID, &r.Emoji, &r.RoleID, &r.Mode, &created); err != nil {
+			return nil, err
+		}
+		if _, t, ok := parseSQLiteTime(created); ok {
+			r.CreatedAt = t
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) ListReactionRolesByMessage(ctx context.Context, guildID, messageID string) ([]model.ReactionRole, error) {
+	rows, err := s.db.QueryContext(ctx, "SELECT id, guild_id, channel_id, message_id, emoji, role_id, mode, created_at FROM reaction_roles WHERE guild_id = ? AND message_id = ?", guildID, messageID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []model.ReactionRole
+	for rows.Next() {
+		var r model.ReactionRole
+		var created sql.NullString
+		if err := rows.Scan(&r.ID, &r.GuildID, &r.ChannelID, &r.MessageID, &r.Emoji, &r.RoleID, &r.Mode, &created); err != nil {
+			return nil, err
+		}
+		if _, t, ok := parseSQLiteTime(created); ok {
+			r.CreatedAt = t
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) DeleteReactionRole(ctx context.Context, id int64, guildID string) error {
+	_, err := s.db.ExecContext(ctx, "DELETE FROM reaction_roles WHERE id = ? AND guild_id = ?", id, guildID)
 	return err
 }
 
