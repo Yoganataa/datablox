@@ -16,6 +16,9 @@ type Store interface {
 	Trending(ctx context.Context, limit int) ([]model.Experience, error)
 	AllUniverseIDs(ctx context.Context) ([]int64, error)
 	Count(ctx context.Context) (int, error)
+	CountGuilds(ctx context.Context) (int, error)
+	CountVotes(ctx context.Context) (int, error)
+	CountVerifiedUsers(ctx context.Context) (int, error)
 	UpdatePlayingAndThumbnail(ctx context.Context, universeID int64, playing, maxPlayers int, thumbnailURL string) error
 	GetGuildConfig(ctx context.Context, guildID string) (model.GuildConfig, error)
 	SetGuildConfig(ctx context.Context, cfg model.GuildConfig) error

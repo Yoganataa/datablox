@@ -113,19 +113,11 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
-	guilds, err := s.store.ListGuildConfigs(r.Context())
-	if err != nil {
-		s.log.Error("dashboard list guilds failed", "err", err)
-		http.Error(w, "failed to load dashboard", http.StatusInternalServerError)
-		return
-	}
-	verified, err := s.store.ListVerifiedUsers(r.Context(), 20)
-	if err != nil {
-		s.log.Error("dashboard list verified failed", "err", err)
-		http.Error(w, "failed to load dashboard", http.StatusInternalServerError)
-		return
-	}
-	_ = pages.Dashboard(guilds, verified, s.discordName(r)).Render(r.Context(), w)
+	guildCount, _ := s.store.CountGuilds(r.Context())
+	expCount, _ := s.store.Count(r.Context())
+	voteCount, _ := s.store.CountVotes(r.Context())
+	verifiedCount, _ := s.store.CountVerifiedUsers(r.Context())
+	_ = pages.Dashboard(guildCount, expCount, voteCount, verifiedCount, s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
@@ -150,6 +142,10 @@ func (s *Server) handleTerms(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListGuilds(w http.ResponseWriter, r *http.Request) {
+	if !s.isAdmin(r) {
+		http.Error(w, "admin only", http.StatusUnauthorized)
+		return
+	}
 	guilds, err := s.store.ListGuildConfigs(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -273,6 +273,24 @@ func (s *Store) Count(ctx context.Context) (int, error) {
 	return n, err
 }
 
+func (s *Store) CountGuilds(ctx context.Context) (int, error) {
+	var n int
+	err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM guild_config WHERE channel_id != '' OR verify_channel_id != ''`).Scan(&n)
+	return n, err
+}
+
+func (s *Store) CountVotes(ctx context.Context) (int, error) {
+	var n int
+	err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM poll_votes`).Scan(&n)
+	return n, err
+}
+
+func (s *Store) CountVerifiedUsers(ctx context.Context) (int, error) {
+	var n int
+	err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM verified_users`).Scan(&n)
+	return n, err
+}
+
 func (s *Store) UpdatePlayingAndThumbnail(ctx context.Context, universeID int64, playing, maxPlayers int, thumbnailURL string) error {
 	_, err := s.db.ExecContext(ctx, `
 		UPDATE experiences
