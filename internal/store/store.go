@@ -27,6 +27,7 @@ type Store interface {
 	GetTopVoted(ctx context.Context, messageID string, limit int) ([]model.Experience, error)
 	AddVote(ctx context.Context, v model.Vote) error
 	RemoveVote(ctx context.Context, messageID, userID string, universeID int64) error
+	ToggleVote(ctx context.Context, v model.Vote) (bool, error)
 	GetVotesByMessage(ctx context.Context, messageID string) ([]model.Vote, error)
 	CountVotesByUniverse(ctx context.Context, messageID string, universeID int64) (int, error)
 	// Bloxlink-like verification + bindings

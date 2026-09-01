@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"time"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -24,6 +25,7 @@ type pendingOAuth struct {
 	State     string
 	Verifier  string
 	DiscordID string
+	Expires   time.Time
 }
 
 type Server struct {
@@ -93,6 +95,10 @@ func (s *Server) discordName(r *http.Request) string {
 	return ""
 }
 
+func (s *Server) cookieSecure() bool {
+	return strings.HasPrefix(s.cfg.WebURL, "https://")
+}
+
 func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
@@ -107,13 +113,31 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
-	guilds, _ := s.store.ListGuildConfigs(r.Context())
-	verified, _ := s.store.ListVerifiedUsers(r.Context(), 20)
+	guilds, err := s.store.ListGuildConfigs(r.Context())
+	if err != nil {
+		s.log.Error("dashboard list guilds failed", "err", err)
+		http.Error(w, "failed to load dashboard", http.StatusInternalServerError)
+		return
+	}
+	verified, err := s.store.ListVerifiedUsers(r.Context(), 20)
+	if err != nil {
+		s.log.Error("dashboard list verified failed", "err", err)
+		http.Error(w, "failed to load dashboard", http.StatusInternalServerError)
+		return
+	}
 	_ = pages.Dashboard(guilds, verified, s.discordName(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
-	verified := r.URL.Query().Get("verified") == "1"
+	verifiedParam := r.URL.Query().Get("verified") == "1"
+	verified := false
+	if verifiedParam {
+		if c, err := r.Cookie("discord_id"); err == nil && c.Value != "" {
+			if _, err := s.store.GetVerifiedUser(r.Context(), c.Value); err == nil {
+				verified = true
+			}
+		}
+	}
 	_ = pages.Verify(s.isAdmin(r), s.discordName(r), verified).Render(r.Context(), w)
 }
 
@@ -126,7 +150,11 @@ func (s *Server) handleTerms(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListGuilds(w http.ResponseWriter, r *http.Request) {
-	guilds, _ := s.store.ListGuildConfigs(r.Context())
+	guilds, err := s.store.ListGuildConfigs(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(guilds)
 }
@@ -180,9 +208,14 @@ func (s *Server) handleDiscordLogin(w http.ResponseWriter, r *http.Request) {
 	state, _ := roblox.GenerateState()
 	redirectURI := strings.TrimRight(s.cfg.WebURL, "/") + "/auth/discord/callback"
 	s.mu.Lock()
-	s.pending[state] = pendingOAuth{State: state}
+	s.pending[state] = pendingOAuth{State: state, Expires: time.Now().Add(5 * time.Minute)}
 	s.mu.Unlock()
-	http.SetCookie(w, &http.Cookie{Name: "oauth_state", Value: state, Path: "/", HttpOnly: true, MaxAge: 300})
+	time.AfterFunc(5*time.Minute, func() {
+		s.mu.Lock()
+		delete(s.pending, state)
+		s.mu.Unlock()
+	})
+	http.SetCookie(w, &http.Cookie{Name: "oauth_state", Value: state, Path: "/", HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode, MaxAge: 300})
 	url := roblox.DiscordAuthorizeURL(s.cfg.DiscordClientID, redirectURI, state)
 	http.Redirect(w, r, url, http.StatusFound)
 }
@@ -195,10 +228,17 @@ func (s *Server) handleDiscordCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.mu.Lock()
-	_, ok := s.pending[state]
+	val, ok := s.pending[state]
 	s.mu.Unlock()
 	if !ok {
 		http.Error(w, "invalid state", http.StatusBadRequest)
+		return
+	}
+	if time.Now().After(val.Expires) {
+		s.mu.Lock()
+		delete(s.pending, state)
+		s.mu.Unlock()
+		http.Error(w, "state expired", http.StatusBadRequest)
 		return
 	}
 	s.mu.Lock()
@@ -241,14 +281,14 @@ func (s *Server) handleDiscordCallback(w http.ResponseWriter, r *http.Request) {
 		Username string `json:"username"`
 	}
 	_ = json.NewDecoder(resp2.Body).Decode(&user)
-	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: user.ID, Path: "/", MaxAge: 86400 * 7, HttpOnly: true})
-	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: user.Username, Path: "/", MaxAge: 86400 * 7})
+	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: user.ID, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: user.Username, Path: "/", MaxAge: 86400 * 7, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.Redirect(w, r, "/dashboard?discord=ok", http.StatusFound)
 }
 
 func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: "", Path: "/", MaxAge: -1})
-	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: "", Path: "/", MaxAge: -1})
+	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.Redirect(w, r, "/dashboard", http.StatusFound)
 }
 
@@ -267,17 +307,22 @@ func (s *Server) handleRobloxLogin(w http.ResponseWriter, r *http.Request) {
 	if discordID != "" {
 		// Establish the visitor's Discord identity via the bot-provided private link
 		// (or a prior login) so the Roblox callback can link both accounts.
-		http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: discordID, Path: "/", MaxAge: 86400 * 7, HttpOnly: true})
+		http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: discordID, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	}
 	verifier, _ := roblox.GenerateCodeVerifier()
 	challenge := roblox.CodeChallenge(verifier)
 	state, _ := roblox.GenerateState()
 	redirectURI := strings.TrimRight(s.cfg.WebURL, "/") + "/auth/roblox/callback"
 	s.mu.Lock()
-	s.pending[state] = pendingOAuth{State: state, Verifier: verifier, DiscordID: discordID}
+	s.pending[state] = pendingOAuth{State: state, Verifier: verifier, DiscordID: discordID, Expires: time.Now().Add(5 * time.Minute)}
 	s.mu.Unlock()
-	http.SetCookie(w, &http.Cookie{Name: "oauth_state", Value: state, Path: "/", HttpOnly: true, MaxAge: 300})
-	http.SetCookie(w, &http.Cookie{Name: "code_verifier", Value: verifier, Path: "/", HttpOnly: true, MaxAge: 300})
+	time.AfterFunc(5*time.Minute, func() {
+		s.mu.Lock()
+		delete(s.pending, state)
+		s.mu.Unlock()
+	})
+	http.SetCookie(w, &http.Cookie{Name: "oauth_state", Value: state, Path: "/", HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode, MaxAge: 300})
+	http.SetCookie(w, &http.Cookie{Name: "code_verifier", Value: verifier, Path: "/", HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode, MaxAge: 300})
 	url := roblox.AuthorizeURL(s.cfg.RobloxClientID, redirectURI, state, challenge)
 	http.Redirect(w, r, url, http.StatusFound)
 }
@@ -294,6 +339,13 @@ func (s *Server) handleRobloxCallback(w http.ResponseWriter, r *http.Request) {
 	s.mu.Unlock()
 	if !ok {
 		http.Error(w, "invalid state", http.StatusBadRequest)
+		return
+	}
+	if time.Now().After(val.Expires) {
+		s.mu.Lock()
+		delete(s.pending, state)
+		s.mu.Unlock()
+		http.Error(w, "state expired", http.StatusBadRequest)
 		return
 	}
 	s.mu.Lock()

@@ -340,6 +340,36 @@ func (s *Store) RemoveVote(ctx context.Context, messageID, userID string, univer
 	return err
 }
 
+func (s *Store) ToggleVote(ctx context.Context, v model.Vote) (bool, error) {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+	var one int
+	err = tx.QueryRowContext(ctx, `SELECT 1 FROM poll_votes WHERE message_id = ? AND user_id = ? AND universe_id = ? LIMIT 1`, v.MessageID, v.UserID, v.UniverseID).Scan(&one)
+	if err == nil {
+		// exists -> remove
+		if _, err := tx.ExecContext(ctx, `DELETE FROM poll_votes WHERE message_id = ? AND user_id = ? AND universe_id = ?`, v.MessageID, v.UserID, v.UniverseID); err != nil {
+			return false, err
+		}
+		if err := tx.Commit(); err != nil {
+			return false, err
+		}
+		return false, nil
+	}
+	if err != sql.ErrNoRows {
+		return false, err
+	}
+	if _, err := tx.ExecContext(ctx, `INSERT INTO poll_votes (message_id, user_id, universe_id, emoji) VALUES (?, ?, ?, ?)`, v.MessageID, v.UserID, v.UniverseID, v.Emoji); err != nil {
+		return false, err
+	}
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (s *Store) HasVote(ctx context.Context, messageID, userID string, universeID int64) (bool, error) {
 	var one int
 	err := s.db.QueryRowContext(ctx, `SELECT 1 FROM poll_votes WHERE message_id = ? AND user_id = ? AND universe_id = ? LIMIT 1`, messageID, userID, universeID).Scan(&one)

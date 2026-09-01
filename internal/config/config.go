@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -42,6 +43,16 @@ func Load() (*Config, error) {
 		RobloxClientID:  os.Getenv("ROBLOX_CLIENT_ID"),
 		RobloxSecret:    os.Getenv("ROBLOX_CLIENT_SECRET"),
 		AdminDiscordIDs: parseIDSet(os.Getenv("ADMIN_DISCORD_IDS")),
+	}
+
+	// Normalize WebURL: trim single trailing slash and validate
+	cfg.WebURL = strings.TrimRight(cfg.WebURL, "/")
+	if _, err := url.ParseRequestURI(cfg.WebURL); err != nil {
+		return nil, errors.New("WEB_URL is not a valid URL: " + cfg.WebURL)
+	}
+	// Validate WebPort is numeric
+	if _, err := strconv.Atoi(cfg.WebPort); err != nil {
+		return nil, errors.New("WEB_PORT must be numeric, got: " + cfg.WebPort)
 	}
 
 	if cfg.DiscordToken == "" {

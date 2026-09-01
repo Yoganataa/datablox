@@ -295,27 +295,32 @@ func (b *Bot) handleVoteSelect(s *discordgo.Session, i *discordgo.InteractionCre
 	messageID := i.Message.ID
 	ctx := context.Background()
 
-	has, _ := b.svc.Store.HasVote(ctx, messageID, userID, universeID)
 	exp, _ := b.svc.Store.GetByUniverseID(ctx, universeID)
 	name := exp.Name
 	if name == "" {
 		name = data.Values[0]
 	}
-	if has {
-		_ = b.svc.Store.RemoveVote(ctx, messageID, userID, universeID)
-		count, _ := b.svc.Store.CountVotesByUniverse(ctx, messageID, universeID)
+	added, err := b.svc.Store.ToggleVote(ctx, model.Vote{MessageID: messageID, UserID: userID, UniverseID: universeID, Emoji: "🎮"})
+	if err != nil {
 		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{Content: fmt.Sprintf("↩️ Removed vote for **%s** — now %d vote(s).", truncate(name, 40), count), Flags: 1 << 6},
+			Data: &discordgo.InteractionResponseData{Content: "⚠️ Vote failed: " + err.Error(), Flags: 1 << 6},
 		})
-	} else {
-		_ = b.svc.Store.AddVote(ctx, model.Vote{MessageID: messageID, UserID: userID, UniverseID: universeID, Emoji: "🎮"})
-		count, _ := b.svc.Store.CountVotesByUniverse(ctx, messageID, universeID)
+		return
+	}
+	count, _ := b.svc.Store.CountVotesByUniverse(ctx, messageID, universeID)
+	if added {
 		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{Content: fmt.Sprintf("✅ Voted for **%s** — total %d vote(s) (click again to remove).", truncate(name, 40), count), Flags: 1 << 6},
 		})
+	} else {
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{Content: fmt.Sprintf("↩️ Removed vote for **%s** — now %d vote(s).", truncate(name, 40), count), Flags: 1 << 6},
+		})
 	}
+	has := !added
 	// Refresh vote + top async to show updated counts
 	go func() {
 		configs, _ := b.svc.Store.ListGuildConfigs(context.Background())
