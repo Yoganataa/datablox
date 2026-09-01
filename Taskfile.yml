@@ -24,17 +24,17 @@ tasks:
       - cloudflared tunnel run datablox
 
   web:
-    desc: Web HMR only (templ proxy + tailwind -> http://localhost:8004)
+    desc: Full except bot (web HMR + tailwind -> http://localhost:8004)
     deps: [tailwind, templ]
 
   bot:
-    desc: Bot stable (no HMR - avoids Discord gateway flood/ban)
+    desc: Full non HMR (bot stable - no flood/ban)
     cmds:
       - go run ./cmd/bot
 
   dev:
-    desc: Full + tunnel (web HMR + tailwind + cloudflared)
-    deps: [tailwind, templ, cloudflared]
+    desc: Full HMR on (web HMR + bot stable + tunnel - HMR only for web)
+    deps: [web, bot, cloudflared]
 
   prod:
     desc: Production build (templ + tailwind minify + binary)
