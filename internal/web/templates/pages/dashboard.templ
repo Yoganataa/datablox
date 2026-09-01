@@ -6,7 +6,7 @@ import (
 	"datablox/internal/web/templates/layouts"
 )
 
-templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool, discordName string) {
+templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool, discordName, clientID string) {
 	@layouts.Base("Datablox - Dashboard", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName}) {
 		<div class="flex flex-col gap-8">
 			<div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0055ff] text-white p-8 sm:p-10 shadow-2xl shadow-slate-900/30 relative overflow-hidden">
@@ -19,7 +19,7 @@ templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool
 					<h1 class="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight">Datablox</h1>
 					<p class="mt-2 text-white/70 text-sm sm:text-base">Server manager bot — Roblox catalog, voting, and Bloxlink-like verification. Manage your servers via Discord.</p>
 					<div class="mt-6 flex flex-wrap gap-3">
-						<a href="https://discord.com/oauth2/authorize?client_id=1543786904447750194&permissions=8&scope=bot%20applications.commands" target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 px-5 py-2.5 text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+						<a href={ templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=8&scope=bot%20applications.commands") } target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 px-5 py-2.5 text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
 							Invite Bot
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
 						</a>

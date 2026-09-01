@@ -160,7 +160,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	expCount, _ := s.store.Count(r.Context())
 	voteCount, _ := s.store.CountVotes(r.Context())
 	verifiedCount, _ := s.store.CountVerifiedUsers(r.Context())
-	_ = pages.Dashboard(guildCount, expCount, voteCount, verifiedCount, s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+	_ = pages.Dashboard(guildCount, expCount, voteCount, verifiedCount, s.isAdmin(r), s.discordName(r), s.cfg.DiscordClientID).Render(r.Context(), w)
 }
 
 func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {

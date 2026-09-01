@@ -79,6 +79,17 @@ func (s *Store) migrate() error {
 			}
 		}
 	}
+	if sqlB, err := migrationsFS.ReadFile("migrations/0005_bloxlink.sql"); err == nil {
+		for _, stmt := range strings.Split(string(sqlB), ";") {
+			stmt = strings.TrimSpace(stmt)
+			if stmt == "" {
+				continue
+			}
+			if _, err := s.db.Exec(stmt); err != nil && !strings.Contains(err.Error(), "already exists") && !strings.Contains(err.Error(), "duplicate column name") {
+				return err
+			}
+		}
+	}
 	if sqlB, err := migrationsFS.ReadFile("migrations/0006_verify_channel.sql"); err == nil {
 		for _, stmt := range strings.Split(string(sqlB), ";") {
 			stmt = strings.TrimSpace(stmt)
