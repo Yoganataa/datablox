@@ -4,7 +4,7 @@ import (
 	"datablox/internal/web/templates/layouts"
 )
 
-templ Verify(isAdmin bool, discordName string, verified bool) {
+templ Verify(isAdmin bool, discordName string, verified bool, guildID string) {
 	@layouts.Base("Datablox — Verify", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName}) {
 		<div class="mx-auto max-w-3xl">
 			if verified {
@@ -14,9 +14,15 @@ templ Verify(isAdmin bool, discordName string, verified bool) {
 					</div>
 					<h1 class="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight">Your Roblox account is verified!</h1>
 					<p class="mt-2 text-emerald-50/90 text-sm sm:text-base">Back to Discord — your roles will be granted automatically.</p>
-					<a href="https://discord.com/app" target="_blank" rel="noreferrer" class="mt-6 inline-flex items-center gap-2 rounded-xl bg-white text-emerald-700 px-6 py-3 text-sm font-bold shadow-lg hover:-translate-y-0.5 transition-all">
-						Back to Discord
-					</a>
+					if guildID != "" {
+						<a href={ templ.SafeURL("https://discord.com/channels/" + guildID) } target="_blank" rel="noreferrer" class="mt-6 inline-flex items-center gap-2 rounded-xl bg-white text-emerald-700 px-6 py-3 text-sm font-bold shadow-lg hover:-translate-y-0.5 transition-all">
+							Back to Discord
+						</a>
+					} else {
+						<a href="https://discord.com/app" target="_blank" rel="noreferrer" class="mt-6 inline-flex items-center gap-2 rounded-xl bg-white text-emerald-700 px-6 py-3 text-sm font-bold shadow-lg hover:-translate-y-0.5 transition-all">
+							Back to Discord
+						</a>
+					}
 				</div>
 			} else {
 				<div class="text-center">

@@ -25,6 +25,7 @@ type pendingOAuth struct {
 	State     string
 	Verifier  string
 	DiscordID string
+	GuildID   string
 	Expires   time.Time
 }
 
@@ -239,7 +240,13 @@ func (s *Server) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	_ = pages.Verify(s.isAdmin(r), s.discordName(r), verified).Render(r.Context(), w)
+	guildID := r.URL.Query().Get("guild_id")
+	if guildID == "" {
+		if c, err := r.Cookie("verify_guild_id"); err == nil {
+			guildID = c.Value
+		}
+	}
+	_ = pages.Verify(s.isAdmin(r), s.discordName(r), verified, guildID).Render(r.Context(), w)
 }
 
 func (s *Server) handlePrivacy(w http.ResponseWriter, r *http.Request) {
@@ -473,16 +480,23 @@ func (s *Server) handleRobloxLogin(w http.ResponseWriter, r *http.Request) {
 		discordID = r.URL.Query().Get("discord_id")
 	}
 	if discordID != "" {
-		// Establish the visitor's Discord identity via the bot-provided private link
-		// (or a prior login) so the Roblox callback can link both accounts.
 		http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: discordID, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	}
+	guildID := r.URL.Query().Get("guild_id")
+	if guildID == "" {
+		if c, err := r.Cookie("verify_guild_id"); err == nil {
+			guildID = c.Value
+		}
+	}
+	if guildID != "" {
+		http.SetCookie(w, &http.Cookie{Name: "verify_guild_id", Value: guildID, Path: "/", MaxAge: 86400 * 7, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	}
 	verifier, _ := roblox.GenerateCodeVerifier()
 	challenge := roblox.CodeChallenge(verifier)
 	state, _ := roblox.GenerateState()
 	redirectURI := strings.TrimRight(s.cfg.WebURL, "/") + "/auth/roblox/callback"
 	s.mu.Lock()
-	s.pending[state] = pendingOAuth{State: state, Verifier: verifier, DiscordID: discordID, Expires: time.Now().Add(5 * time.Minute)}
+	s.pending[state] = pendingOAuth{State: state, Verifier: verifier, DiscordID: discordID, GuildID: guildID, Expires: time.Now().Add(5 * time.Minute)}
 	s.mu.Unlock()
 	time.AfterFunc(5*time.Minute, func() {
 		s.mu.Lock()
@@ -595,7 +609,21 @@ func (s *Server) handleRobloxCallback(w http.ResponseWriter, r *http.Request) {
 	fmt.Sscan(info.Sub, &robloxID)
 	_ = s.store.UpsertVerifiedUser(r.Context(), model.VerifiedUser{DiscordID: discordID, RobloxID: robloxID, RobloxUsername: info.Username})
 	go s.syncVerifiedUser(discordID, robloxID)
-	http.Redirect(w, r, "/verify?verified=1", http.StatusFound)
+	guildID := val.GuildID
+	if guildID == "" {
+		if c, err := r.Cookie("verify_guild_id"); err == nil {
+			guildID = c.Value
+		}
+	}
+	if guildID == "" {
+		guildID = r.URL.Query().Get("guild_id")
+	}
+	if guildID != "" {
+		http.SetCookie(w, &http.Cookie{Name: "verify_guild_id", Value: guildID, Path: "/", MaxAge: 86400*7, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+		http.Redirect(w, r, "/verify?verified=1&guild_id="+url.QueryEscape(guildID), http.StatusFound)
+	} else {
+		http.Redirect(w, r, "/verify?verified=1", http.StatusFound)
+	}
 }
 
 func (s *Server) syncVerifiedUser(discordID string, robloxID int64) {

@@ -69,6 +69,59 @@ func (b *Bot) handleVerifyStart(s *discordgo.Session, i *discordgo.InteractionCr
 		respondEphemeral(s, i, "Could not identify your Discord account. Please try again.")
 		return
 	}
+	// If already verified globally (in another server), grant roles in this server and show ephemeral status
+	if u, err := b.svc.Store.GetVerifiedUser(context.Background(), discordID); err == nil && u.RobloxID != 0 {
+		go func() {
+			ctx := context.Background()
+			bindings, _ := b.svc.Store.ListBindings(ctx, i.GuildID)
+			if len(bindings) > 0 && b.svc.Client != nil {
+				groups, _ := b.svc.Client.GetUserGroups(ctx, u.RobloxID)
+				groupMap := make(map[int64]struct{ Rank int })
+				for _, g := range groups {
+					groupMap[g.GroupID] = struct{ Rank int }{g.Rank}
+				}
+				for _, bnd := range bindings {
+					if g, ok := groupMap[bnd.GroupID]; ok {
+						matched := false
+						if bnd.RobloxRoleID != nil && int64(g.Rank) == *bnd.RobloxRoleID {
+							matched = true
+						} else if bnd.RankMin != nil && bnd.RankMax != nil {
+							if g.Rank >= *bnd.RankMin && g.Rank <= *bnd.RankMax {
+								matched = true
+							}
+						} else if bnd.RobloxRoleID == nil && bnd.RankMin == nil {
+							matched = true
+						}
+						if matched {
+							_ = s.GuildMemberRoleAdd(i.GuildID, discordID, bnd.DiscordRoleID)
+						}
+					}
+				}
+			}
+		}()
+		embedVerified := &discordgo.MessageEmbed{
+			Title:       "✅ Already Verified",
+			Description: fmt.Sprintf("You are already verified as **%s** (`%d`). Your roles have been granted in this server.", u.RobloxUsername, u.RobloxID),
+			Color:       0x00C97A,
+		}
+		// Still provide re-verify link if they want to change account
+		verifyURL := fmt.Sprintf("%s/auth/roblox/login?discord_id=%s&guild_id=%s",
+			strings.TrimRight(b.cfg.WebURL, "/"), discordID, i.GuildID)
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{embedVerified},
+				Components: []discordgo.MessageComponent{
+					discordgo.ActionsRow{Components: []discordgo.MessageComponent{
+						discordgo.Button{Label: "Re-verify (change account)", Style: discordgo.LinkButton, URL: verifyURL, Emoji: &discordgo.ComponentEmoji{Name: "🔄"}},
+						discordgo.Button{Label: "Back to Discord", Style: discordgo.LinkButton, URL: fmt.Sprintf("https://discord.com/channels/%s", i.GuildID)},
+					}},
+				},
+				Flags: 1 << 6,
+			},
+		})
+		return
+	}
 	verifyURL := fmt.Sprintf("%s/auth/roblox/login?discord_id=%s&guild_id=%s",
 		strings.TrimRight(b.cfg.WebURL, "/"), discordID, i.GuildID)
 	embed := &discordgo.MessageEmbed{
