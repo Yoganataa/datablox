@@ -1,0 +1,62 @@
+package pages
+
+import (
+	"datablox/internal/web/templates/layouts"
+)
+
+templ Verify(isAdmin bool, discordName string, verified bool) {
+	@layouts.Base("Datablox — Verify", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName}) {
+		<div class="mx-auto max-w-3xl">
+			if verified {
+				<div class="rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white p-8 sm:p-10 text-center shadow-2xl shadow-emerald-500/30">
+					<div class="mx-auto w-16 h-16 rounded-full bg-white/20 backdrop-blur grid place-items-center">
+						<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+					</div>
+					<h1 class="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight">Your Roblox account is verified!</h1>
+					<p class="mt-2 text-emerald-50/90 text-sm sm:text-base">Back to Discord — your roles will be granted automatically.</p>
+					<a href="https://discord.com/app" target="_blank" rel="noreferrer" class="mt-6 inline-flex items-center gap-2 rounded-xl bg-white text-emerald-700 px-6 py-3 text-sm font-bold shadow-lg hover:-translate-y-0.5 transition-all">
+						Back to Discord
+					</a>
+				</div>
+			} else {
+				<div class="text-center">
+					<div class="inline-flex items-center gap-2 rounded-full bg-[#5865F2]/10 text-[#5865F2] text-xs font-semibold px-3 py-1">Verification guide</div>
+					<h1 class="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight">Verify your Roblox account</h1>
+					<p class="mt-3 text-slate-500 text-sm sm:text-base max-w-lg mx-auto">
+						Everything happens via Discord — no login or signup needed here.
+					</p>
+				</div>
+
+				<div class="mt-10 space-y-4">
+					@stepCard2("1", "bg-[#5865F2]", "Open the Discord server", "Join a server that has Datablox verification set up.", "Admins run /config to enable the verification channel.")
+					@stepCard2("2", "bg-[#00A2FF]", "Press “Verify with Datablox”", "Find the welcome message pinned in the verification channel and click the blue button.", "Look for the welcome message and click the blue button.")
+					@stepCard2("3", "bg-[#7c4dff]", "Authorize your Roblox account", "You'll be redirected to log in to your Roblox account and approve access.", "Make sure you use your own Roblox account.")
+					@stepCard2("4", "bg-[#00c97a]", "Done!", "Your roles and nickname are granted automatically. Return to Discord.", "Usually takes less than a minute.")
+				</div>
+
+				<div class="mt-10 rounded-3xl border border-slate-200/80 bg-white/70 backdrop-blur p-8 text-center shadow-sm">
+					<div class="font-bold text-[15px]">Stuck on a step?</div>
+					<p class="text-sm text-slate-500 mt-1.5">Contact the Discord server admins.</p>
+				</div>
+			}
+
+			<div class="mt-8 flex justify-center">
+				<a href="/" class="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12"/></svg>
+					Back to home
+				</a>
+			</div>
+		</div>
+	}
+}
+
+templ stepCard2(num string, accentBg string, title string, desc string, hint string) {
+	<div class="flex gap-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+		<div class={ "flex-none w-11 h-11 rounded-xl text-white grid place-items-center text-base font-bold shadow-md", accentBg }>{ num }</div>
+		<div>
+			<div class="font-bold text-[15px]">{ title }</div>
+			<p class="text-sm text-slate-600 mt-1">{ desc }</p>
+			<p class="text-xs text-slate-400 mt-1.5">{ hint }</p>
+		</div>
+	</div>
+}

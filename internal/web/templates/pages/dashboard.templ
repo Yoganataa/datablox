@@ -1,0 +1,147 @@
+package pages
+
+import (
+	"fmt"
+
+	"datablox/components/badge"
+	"datablox/components/card"
+	"datablox/components/table"
+	"datablox/internal/model"
+	"datablox/internal/web/templates/layouts"
+)
+
+templ Dashboard(guilds []model.GuildConfig, verified []model.VerifiedUser, discordName string) {
+	@layouts.Base("Datablox — Dashboard", layouts.Nav{IsAdmin: true, DiscordName: discordName}) {
+		<div class="flex flex-col gap-8">
+			<div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0055ff] text-white p-8 sm:p-10 shadow-2xl shadow-slate-900/30 relative overflow-hidden">
+				<div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-[#00A2FF]/30 blur-3xl"></div>
+				<div class="absolute -left-8 -bottom-14 w-40 h-40 rounded-full bg-[#5865F2]/30 blur-3xl"></div>
+				<div class="relative">
+					<div class="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-3 py-1 text-xs font-semibold">
+						<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Admin panel
+					</div>
+					<h1 class="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight">Dashboard</h1>
+					<p class="mt-2 text-white/70 text-sm sm:text-base">Manage verification and monitor connected servers.</p>
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+				@statCard("Connected Servers", len(guilds), "from-[#5865F2] to-[#7c4dff]")
+				@statCard("Verified Accounts", len(verified), "from-emerald-500 to-teal-500")
+				@statCard("Verify Channels", countVerifyChannels(guilds), "from-[#00A2FF] to-[#0055ff]")
+			</div>
+
+			@card.Card() {
+				@card.Header() {
+					<div class="flex items-center justify-between w-full">
+						@card.Title() { Servers }
+						@badge.Badge(badge.Props{Variant: "secondary"}) {
+							{ fmt.Sprintf("%d server", len(guilds)) }
+						}
+					</div>
+				}
+				@card.Content() {
+					if len(guilds) == 0 {
+						<div class="p-10 text-center text-muted-foreground text-sm">
+							No servers configured. Run <code class="bg-muted px-1.5 py-0.5 rounded">/config</code> in Discord.
+						</div>
+					} else {
+						@table.Table() {
+							@table.Header() {
+								@table.Row() {
+									@table.Head() { Guild ID }
+									@table.Head() { Channel Feed }
+									@table.Head() { Channel Verify }
+									@table.Head() { Genre }
+								}
+							}
+							@table.Body() {
+								for _, g := range guilds {
+									@table.Row() {
+										@table.Cell() { <span class="font-mono text-xs">{ g.GuildID }</span> }
+										@table.Cell() {
+											if g.ChannelID != "" {
+												@badge.Badge() { #{ g.ChannelID } }
+											} else {
+												<span class="text-muted-foreground">—</span>
+											}
+										}
+										@table.Cell() {
+											if g.VerifyChannelID != "" {
+												@badge.Badge(badge.Props{Variant: "outline"}) { #{ g.VerifyChannelID } }
+											} else {
+												<span class="text-muted-foreground">—</span>
+											}
+										}
+										@table.Cell() {
+											if g.DefaultGenre != "" {
+												@badge.Badge(badge.Props{Variant: "secondary"}) { { g.DefaultGenre } }
+											} else {
+												<span class="text-muted-foreground">—</span>
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			@card.Card() {
+				@card.Header() {
+					<div class="flex items-center justify-between w-full">
+						@card.Title() { Verified Accounts }
+						@badge.Badge(badge.Props{Variant: "secondary"}) {
+							{ fmt.Sprintf("%d accounts", len(verified)) }
+						}
+					</div>
+				}
+				@card.Content() {
+					if len(verified) == 0 {
+						<div class="p-8 text-center text-muted-foreground text-sm">
+							No verified accounts yet. Ask members to press Verify in the verification channel.
+						</div>
+					} else {
+						@table.Table() {
+							@table.Header() {
+								@table.Row() {
+									@table.Head() { Discord ID }
+									@table.Head() { Roblox ID }
+									@table.Head() { Roblox Username }
+								}
+							}
+							@table.Body() {
+								for _, u := range verified {
+									@table.Row() {
+										@table.Cell() { <span class="font-mono text-xs">{ u.DiscordID }</span> }
+										@table.Cell() { <span class="font-mono text-xs">{ fmt.Sprintf("%d", u.RobloxID) }</span> }
+										@table.Cell() { <span class="font-medium">{ u.RobloxUsername }</span> }
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		</div>
+	}
+}
+
+templ statCard(label string, value int, gradient string) {
+	<div class="relative overflow-hidden rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+		<div class={ "absolute inset-x-0 top-0 h-1 bg-gradient-to-r", gradient }></div>
+		<div class="text-sm font-medium text-slate-500">{ label }</div>
+		<div class="mt-3 text-4xl font-extrabold tracking-tight">{ value }</div>
+	</div>
+}
+
+func countVerifyChannels(guilds []model.GuildConfig) int {
+	n := 0
+	for _, g := range guilds {
+		if g.VerifyChannelID != "" {
+			n++
+		}
+	}
+	return n
+}

@@ -1,0 +1,10 @@
+.env
+data/*
+!data/.gitkeep
+bin/
+*.exe
+*.db
+*.db-wal
+*.db-shm
+
+.serena/

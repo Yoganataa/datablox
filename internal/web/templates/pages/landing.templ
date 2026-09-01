@@ -1,0 +1,105 @@
+package pages
+
+import (
+	"datablox/internal/web/templates/layouts"
+)
+
+templ Landing(isAdmin bool, discordName string) {
+	@layouts.Base("Datablox — Roblox Verification", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName}) {
+		<div class="mx-auto max-w-4xl">
+			<!-- Hero -->
+			<div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0055ff] via-[#0088ff] to-[#00d4ff] text-white shadow-2xl shadow-blue-500/30">
+				<div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/15 blur-2xl"></div>
+				<div class="absolute -left-10 -bottom-20 w-56 h-56 rounded-full bg-[#00ffd5]/20 blur-2xl"></div>
+				<div class="relative px-8 sm:px-12 py-14 sm:py-16">
+					<div class="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur px-3 py-1 text-xs font-semibold">
+						<span class="w-2 h-2 rounded-full bg-[#00ffd5] animate-pulse"></span> Fast &amp; secure verification
+					</div>
+					<h1 class="mt-5 text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.1]">
+						Verify your<br/>Roblox account now
+					</h1>
+					<p class="mt-4 text-blue-50/90 text-base sm:text-lg max-w-xl">
+						Datablox links your Discord and Roblox accounts and grants you
+						access and roles — all via Discord.
+					</p>
+					<div class="mt-8 flex flex-col sm:flex-row gap-3">
+						<a href="/verify" class="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-blue-700 px-6 py-3.5 text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+							Start verification
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+						</a>
+						<a href="https://discord.com/app" target="_blank" rel="noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/40 bg-white/10 backdrop-blur px-6 py-3.5 text-sm font-bold text-white hover:bg-white/20 transition-colors">
+							<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+							Open Discord
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<!-- How it works -->
+			<div class="mt-14">
+				<div class="text-center">
+					<h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">How it works</h2>
+					<p class="text-slate-500 mt-2 text-sm sm:text-base">Three easy steps, done in seconds.</p>
+				</div>
+				<div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-5">
+					@stepCard("1", "bg-[#5865F2]", "Join the server", "Join a Discord server that uses Datablox.")
+					@stepCard("2", "bg-[#00A2FF]", "Click Verify", "Press “Verify with Datablox” in the verification channel.")
+					@stepCard("3", "bg-[#00c97a]", "Get access", "Your roles and nickname are synced automatically.")
+				</div>
+			</div>
+
+			<!-- Perks -->
+			<div class="mt-14">
+				<div class="text-center">
+					<h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Why Datablox?</h2>
+					<p class="text-slate-500 mt-2 text-sm sm:text-base">A seamless verification experience without hassle.</p>
+				</div>
+				<div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-5">
+					<div class="rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+						<div class="w-10 h-10 rounded-xl bg-[#00A2FF]/10 text-[#00A2FF] grid place-items-center mb-4">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+						</div>
+						<div class="font-bold text-[15px]">Secure</div>
+						<p class="text-sm text-slate-500 mt-1.5">Legit OAuth verification — your data is protected.</p>
+					</div>
+					<div class="rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+						<div class="w-10 h-10 rounded-xl bg-[#5865F2]/10 text-[#5865F2] grid place-items-center mb-4">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+						</div>
+						<div class="font-bold text-[15px]">Instant</div>
+						<p class="text-sm text-slate-500 mt-1.5">Roles are granted instantly after verification.</p>
+					</div>
+					<div class="rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+						<div class="w-10 h-10 rounded-xl bg-[#00c97a]/10 text-[#00c97a] grid place-items-center mb-4">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+						</div>
+						<div class="font-bold text-[15px]">Trusted</div>
+						<p class="text-sm text-slate-500 mt-1.5">Seamlessly integrated with Discord &amp; Roblox.</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Final CTA -->
+			<div class="mt-14 rounded-3xl border border-slate-200/80 bg-white/70 backdrop-blur p-8 sm:p-10 text-center shadow-sm">
+				<h3 class="text-xl sm:text-2xl font-extrabold tracking-tight">Ready to verify?</h3>
+				<p class="text-slate-500 mt-2 text-sm sm:text-base max-w-md mx-auto">
+					Open Discord, temukan tombol “Verify with Datablox”, dan selesaikan verifikasi dalam hitungan detik.
+				</p>
+				<a href="https://discord.com/app" target="_blank" rel="noreferrer" class="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#5865F2] to-[#7c4dff] text-white px-7 py-3.5 text-sm font-bold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+					Open Discord sekarang
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+				</a>
+			</div>
+		</div>
+	}
+}
+
+templ stepCard(num string, accentBg string, title string, desc string) {
+	<div class="rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+		<div class="flex items-center gap-3">
+			<div class={ "w-9 h-9 rounded-xl text-white grid place-items-center text-sm font-bold shadow-md", accentBg }>{ num }</div>
+			<div class="font-bold text-[15px]">{ title }</div>
+		</div>
+		<p class="text-sm text-slate-500 mt-3">{ desc }</p>
+	</div>
+}

@@ -1,0 +1,51 @@
+version: "3"
+output: prefixed
+
+tasks:
+  templ:
+    internal: true
+    cmds:
+      - templ generate --watch --proxy="http://localhost:8003" --cmd="go run ./cmd/web" --open-browser=false
+
+  tailwind:
+    internal: true
+    cmds:
+      - |
+        TEMPLUI_PATH="$(go list -mod=mod -m -f '{{.Dir}}' github.com/templui/templui)" && \
+        printf '%s\n' \
+          '@source "./**/*.templ";' \
+          "@source \"$TEMPLUI_PATH/components/**/*.templ\";" \
+          > ./assets/css/sources.generated.css && \
+        tailwindcss -i ./assets/css/input.css -o ./assets/css/output.css --watch
+
+  cloudflared:
+    internal: true
+    cmds:
+      - cloudflared tunnel run datablox
+
+  web:
+    desc: Web HMR only (templ proxy + tailwind -> http://localhost:8004)
+    deps: [tailwind, templ]
+
+  bot:
+    desc: Bot stable (no HMR - avoids Discord gateway flood/ban)
+    cmds:
+      - go run ./cmd/bot
+
+  dev:
+    desc: Full + tunnel (web HMR + tailwind + cloudflared)
+    deps: [tailwind, templ, cloudflared]
+
+  prod:
+    desc: Production build (templ + tailwind minify + binary)
+    cmds:
+      - templ generate
+      - |
+        TEMPLUI_PATH="$(go list -mod=mod -m -f '{{.Dir}}' github.com/templui/templui)" && \
+        printf '%s\n' \
+          '@source "./**/*.templ";' \
+          "@source \"$TEMPLUI_PATH/components/**/*.templ\";" \
+          > ./assets/css/sources.generated.css && \
+        tailwindcss -i ./assets/css/input.css -o ./assets/css/output.css --minify
+      - go build -o ./bin/bot.exe ./cmd/bot
+      - go build -o ./bin/web.exe ./cmd/web

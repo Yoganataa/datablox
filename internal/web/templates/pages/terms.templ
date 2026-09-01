@@ -1,0 +1,80 @@
+package pages
+
+import "datablox/internal/web/templates/layouts"
+
+templ Terms(isAdmin bool, discordName string) {
+	@layouts.Base("Datablox - Terms of Service", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, Lang: "en"}) {
+		<div class="max-w-4xl mx-auto">
+			<div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0055ff] text-white p-8 sm:p-10 shadow-2xl shadow-slate-900/30 relative overflow-hidden">
+				<div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-[#00A2FF]/30 blur-3xl"></div>
+				<div class="absolute -left-8 -bottom-14 w-40 h-40 rounded-full bg-[#5865F2]/30 blur-3xl"></div>
+				<div class="relative">
+					<div class="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-3 py-1 text-xs font-semibold">Legal - Last updated: August 31, 2026</div>
+					<h1 class="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight">Terms of Service</h1>
+					<p class="mt-2 text-white/70 text-sm">Datablox - https://datablox.devest.live</p>
+				</div>
+			</div>
+			<div class="mt-6 bg-white border border-slate-200/80 rounded-2xl shadow-sm">
+				<div class="p-6 sm:p-8 text-sm leading-relaxed text-slate-700 space-y-7 [&_h2]:text-[15px] [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:text-slate-900 [&_h2]:mt-2 [&_a]:text-[#0055ff] [&_a]:underline-offset-4 hover:[&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5 [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[13px]">
+					<section>
+						<h2>1. Acceptance</h2>
+						<p class="mt-2">By adding Datablox to your Discord server, using <code>/add</code>, <code>/verify</code>, or visiting <code>https://datablox.devest.live</code>, you agree to these Terms, to <a href="/privacy">our Privacy Policy</a>, and to <a href="https://discord.com/terms">Discord's Terms</a> and <a href="https://en.help.roblox.com/hc/en-us/articles/115004647846">Roblox's Terms</a>. If you do not agree, do not use the service.</p>
+					</section>
+					<section>
+						<h2>2. App Terms - Roblox Requirement</h2>
+						<p class="mt-2">Per the Roblox <a href="https://en.help.roblox.com/hc/en-us/articles/15887203369620-Creator-Third-Party-App-Terms">Creator Third Party App Terms</a>, the following applies:</p>
+						<ul>
+							<li>These App Terms are between <b>you and Datablox only, not with Roblox</b>.</li>
+							<li><b>Roblox is not affiliated</b> with you or this app.</li>
+							<li><b>Roblox is not responsible or liable for use of the app</b>.</li>
+							<li><b>Roblox has no obligation</b> to provide maintenance or support.</li>
+							<li>By using the app, <b>you waive and release claims against Roblox</b> arising from the app.</li>
+							<li>You must <b>comply with the Roblox Terms</b> including Community Standards.</li>
+						</ul>
+					</section>
+					<section>
+						<h2>3. Service Description</h2>
+						<p class="mt-2">Datablox catalogs public Roblox experiences via <code>apis.roblox.com</code> and <code>games.roblox.com</code>, provides a 1-channel feed (Vote #1 paginated 25 + Top 10 + Feed), and Bloxlink-like verification (Discord to Roblox link via OAuth PKCE <code>openid profile</code>).</p>
+					</section>
+					<section>
+						<h2>4. Your Obligations</h2>
+						<ul>
+							<li>You must have permission to manage the server where you run <code>/config</code>.</li>
+							<li>Do not abuse APIs, spam votes, or bypass verification. Do not share <code>.ROBLOSECURITY</code>.</li>
+							<li>You are responsible for experiences you add and bindings you create.</li>
+						</ul>
+					</section>
+					<section>
+						<h2>5. Discord and Roblox Integration</h2>
+						<p class="mt-2">Verification uses Roblox OAuth <code>openid profile</code> (PKCE S256) and Discord OAuth2 <code>identify guilds</code>. We verify <code>id_token</code> via <code>https://apis.roblox.com/oauth/v1/certs</code> (ES256) and store only <code>roblox_id</code> and username. Minimal scope: <code>openid profile</code> - Account Linking Tools.</p>
+					</section>
+					<section>
+						<h2>6. Intellectual Property</h2>
+						<p class="mt-2">Roblox and Discord marks belong to their owners. Datablox is not affiliated with Roblox Corporation or Discord Inc.</p>
+					</section>
+					<section>
+						<h2>7. Availability</h2>
+						<p class="mt-2">Service is provided "as is" via Cloudflare Tunnel. We do not guarantee uptime. Rate limits apply. We may rate-limit abusive guilds.</p>
+					</section>
+					<section>
+						<h2>8. Termination</h2>
+						<p class="mt-2">We may suspend service for violations. You may remove the bot or delete data via Dashboard or revoke OAuth. Contact: <a href="mailto:support@devest.live">support@devest.live</a>.</p>
+					</section>
+					<section>
+						<h2>9. Disclaimer</h2>
+						<p class="mt-2">To the maximum extent permitted by law, Datablox is not liable for indirect damages. Aggregate liability limited to amount paid ($0). Roblox and Discord disclaim liability as in Section 2.</p>
+					</section>
+					<section>
+						<h2>10. Changes</h2>
+						<p class="mt-2">We will update the date above and post changes here. Continued use means acceptance.</p>
+					</section>
+					<section>
+						<h2>11. Contact</h2>
+						<p class="mt-2">Datablox - <a href="https://datablox.devest.live">https://datablox.devest.live</a> - Email: <a href="mailto:support@devest.live">support@devest.live</a> - Terms URL: <code>https://datablox.devest.live/terms</code>.</p>
+					</section>
+				</div>
+			</div>
+			<div class="mt-6 text-center text-sm"><a href="/privacy" class="text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline">Privacy Policy -></a></div>
+		</div>
+	}
+}

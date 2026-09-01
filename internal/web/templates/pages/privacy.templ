@@ -1,0 +1,72 @@
+package pages
+
+import "datablox/internal/web/templates/layouts"
+
+templ Privacy(isAdmin bool, discordName string) {
+	@layouts.Base("Datablox - Privacy Policy", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, Lang: "en"}) {
+		<div class="max-w-4xl mx-auto">
+			<div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0055ff] text-white p-8 sm:p-10 shadow-2xl shadow-slate-900/30 relative overflow-hidden">
+				<div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-[#00A2FF]/30 blur-3xl"></div>
+				<div class="absolute -left-8 -bottom-14 w-40 h-40 rounded-full bg-[#5865F2]/30 blur-3xl"></div>
+				<div class="relative">
+					<div class="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-3 py-1 text-xs font-semibold">Legal · Last updated: August 31, 2026</div>
+					<h1 class="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight">Privacy Policy</h1>
+					<p class="mt-2 text-white/70 text-sm">Datablox • https://datablox.devest.live • Scopes: <code class="bg-white/20 px-1.5 py-0.5 rounded text-xs">openid profile</code> · Category: Account Linking Tools</p>
+				</div>
+			</div>
+			<div class="mt-6 bg-white border border-slate-200/80 rounded-2xl shadow-sm">
+				<div class="p-6 sm:p-8 text-sm leading-relaxed text-slate-700 space-y-7 [&_h2]:text-[15px] [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:text-slate-900 [&_h2]:mt-2 [&_a]:text-[#0055ff] [&_a]:underline-offset-4 hover:[&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5 [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[13px]">
+					<section>
+						<h2>1. Overview</h2>
+						<p class="mt-2">Datablox ("we", "us") is a Discord bot and web dashboard that catalogs Roblox experiences and provides Bloxlink-like verification (Discord ↔ Roblox account link) and a 1-channel server feed. This policy explains what data we collect when you use <code>https://datablox.devest.live</code> and our Discord bot, and via Roblox OAuth scopes <code>openid profile</code> (Account Linking Tools - <a href="https://en.help.roblox.com/hc/en-us/articles/37924211313044-Creator-Third-Party-App-Policy">Creator Third Party App Policy</a>). We only request the minimum scopes necessary.</p>
+					</section>
+					<section>
+						<h2>2. Data We Collect</h2>
+						<ul>
+							<li><b>Discord:</b> Discord user ID, username, guild ID, guild roles, and interaction data (slash commands, button/select interactions) via Discord Gateway and, if you log in to the dashboard, via Discord OAuth2 (<code>identify guilds</code>). We store <code>discord_id</code> and <code>discord_name</code> in secure HttpOnly cookies.</li>
+							<li><b>Roblox OAuth (PKCE):</b> When you click "Verify with Datablox" (Discord Link Button → <code>/auth/roblox/login</code>), we use PKCE S256 to request <code>openid profile</code>. After you authorize, we receive an <code>id_token</code> (ES256, verified via <code>https://apis.roblox.com/oauth/v1/certs</code>) and <code>access_token</code> to call <code>/oauth/v1/userinfo</code>. We store only <code>roblox_id (sub)</code>, <code>preferred_username</code>, and <code>name</code>. We do <b>not</b> collect your password, email, or <code>.ROBLOSECURITY</code>.</li>
+							<li><b>Roblox Public:</b> Experiences added via <code>/add</code> are fetched from <code>apis.roblox.com</code> / <code>games.roblox.com</code> (name, description, creator, playing, visits, thumbnails) and stored as <code>experiences</code>.</li>
+							<li><b>Votes &amp; Configuration:</b> Poll votes (<code>poll_votes</code>), guild feed config (<code>guild_config</code>), and optional group→role bindings (<code>guild_bindings</code>).</li>
+							<li><b>Technical:</b> Cloudflare Tunnel access logs, SQLite WAL, and standard web logs (IP, user-agent) for abuse prevention. No advertising trackers or third-party analytics.</li>
+						</ul>
+					</section>
+					<section>
+						<h2>3. How We Use Data</h2>
+						<p class="mt-2">To (a) link your Discord and Roblox accounts, (b) sync roles/nicknames per guild bindings you configure, (c) display your catalog, votes, and 1-channel feed, and (d) provide the dashboard. We use data only as described in this policy and as permitted by the <a href="https://support-dev.discord.com/hc/en-us/articles/8562894815383-Discord-Developer-Terms-of-Service">Discord Developer Terms</a> and Roblox Third Party App Terms.</p>
+						<p class="mt-2">We do <b>not</b>: track users across experiences or platforms, build behavioral profiles, share identifying information with third parties, sell data, use data for AI/LLM training, or use geolocation tracking.</p>
+					</section>
+					<section>
+						<h2>4. Legal Basis, Sharing &amp; Applicable Laws</h2>
+						<p class="mt-2">We process data based on your consent (OAuth authorization) and to provide the service. We comply with applicable privacy laws including GDPR, ePrivacy, UK GDPR, Brazil's LGPD, CCPA and CPRA. We share data only with Discord and Roblox APIs as necessary to fulfill verification and role sync. Data is not disclosed to data brokers, ad networks, or other monetization services. Cloudflare Tunnel encrypts traffic in transit.</p>
+					</section>
+					<section>
+						<h2>5. Storage, Retention &amp; Deletion</h2>
+						<p class="mt-2">Data is stored in SQLite (<code>./data/bot.db</code>, WAL) on our VPS and in-memory pending OAuth states (state, code_verifier, TTL 5 min). <code>verified_users</code> is kept until you unlink or request deletion. Poll votes are kept until the vote message is regenerated. We promptly delete data when it is no longer needed for the app's stated functionality, when you request it, when Discord/Roblox or law requires it, or when you stop operating the app.</p>
+						<p class="mt-1">How to request deletion or correction: email <a href="mailto:support@devest.live">support@devest.live</a>, use <a href="/verify">/verify</a> help, or revoke OAuth directly at <a href="https://www.roblox.com/my/account">Roblox Apps</a> and <a href="https://discord.com/developers/applications">Discord Apps</a>.</p>
+					</section>
+					<section>
+						<h2>6. Cookies</h2>
+						<p class="mt-2">We use HttpOnly cookies <code>discord_id</code>, <code>discord_name</code>, <code>oauth_state</code>, <code>code_verifier</code> (Max-Age 5 min–7 days) only for OAuth CSRF protection and login. No tracking cookies.</p>
+					</section>
+					<section>
+						<h2>7. Children's Privacy</h2>
+						<p class="mt-2">Roblox users under 13 require parental/verifiable consent for OAuth. We only request <code>openid profile</code> and do not knowingly collect data from children without consent. If you believe a child provided data without consent, contact us for deletion.</p>
+					</section>
+					<section>
+						<h2>8. Your Rights (GDPR / CCPA / LGPD)</h2>
+						<p class="mt-2">You have the right to access, correct, or delete your personal data, to object to processing, and to withdraw consent. To exercise these rights, email <a href="mailto:support@devest.live">support@devest.live</a> or use the self-service controls: revoke Roblox access at <a href="https://www.roblox.com/my/account">Roblox</a> → Apps, revoke Discord access at <a href="https://discord.com/developers/applications">Discord</a>, or re-verify/unlink from the Discord Verify button. We respond within 30 days.</p>
+					</section>
+					<section>
+						<h2>9. Changes</h2>
+						<p class="mt-2">We post updates here and bump the "Last updated" date. Continued use after changes means acceptance.</p>
+					</section>
+					<section>
+						<h2>10. Contact</h2>
+						<p class="mt-2">Datablox • <a href="https://datablox.devest.live">https://datablox.devest.live</a> • Email: <a href="mailto:support@devest.live">support@devest.live</a> • Discord App: Datablox • For OAuth review, this URL is the Privacy Policy URL in Discord Developer Portal and Roblox Creator Dashboard.</p>
+					</section>
+				</div>
+			</div>
+			<div class="mt-6 text-center text-sm"><a href="/terms" class="text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline">Terms of Service →</a></div>
+		</div>
+	}
+}
