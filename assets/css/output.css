@@ -1274,6 +1274,13 @@
       }
     }
   }
+  .hover\:bg-\[\#4752c4\] {
+    &:hover {
+      @media (hover: hover) {
+        background-color: #4752c4;
+      }
+    }
+  }
   .hover\:bg-accent {
     &:hover {
       @media (hover: hover) {
