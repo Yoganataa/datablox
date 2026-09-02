@@ -3,9 +3,10 @@ package layouts
 import _ "datablox/utils" // keep for TwMerge if needed
 
 type Nav struct {
-	IsAdmin     bool
-	DiscordName string
-	Lang        string
+	IsAdmin       bool
+	DiscordName   string
+	DiscordAvatar string
+	Lang          string
 }
 
 func (n Nav) LangOrDefault() string {
@@ -51,6 +52,11 @@ templ Base(title string, nav Nav) {
 						if nav.DiscordName != "" {
 							<div class="relative group ml-2">
 								<button class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">
+									if nav.DiscordAvatar != "" {
+										<img src={ nav.DiscordAvatar } alt={ nav.DiscordName } class="w-7 h-7 rounded-full object-cover border border-slate-200"/>
+									} else {
+										<div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#5865F2] to-[#00A2FF] text-white grid place-items-center text-xs font-bold">{ nav.DiscordName[:1] }</div>
+									}
 									<span class="hidden sm:inline">Hi, { nav.DiscordName }</span>
 									<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
 								</button>

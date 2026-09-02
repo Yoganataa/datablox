@@ -10,8 +10,8 @@ import (
 	"datablox/internal/web/templates/layouts"
 )
 
-templ GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChannelName, verifyChannelName string, cfg model.GuildConfig, bindings []model.GuildBinding, reactionRoles []model.ReactionRole, isAdmin bool, discordName string) {
-	@layouts.Base(guildName+" - Datablox", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName}) {
+templ GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChannelName, verifyChannelName string, cfg model.GuildConfig, bindings []model.GuildBinding, reactionRoles []model.ReactionRole, isAdmin bool, discordName, discordAvatar string) {
+	@layouts.Base(guildName+" - Datablox", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
 		<div class="max-w-5xl mx-auto flex flex-col gap-6">
 			<a href="/dashboard/guilds" class="text-sm font-medium text-slate-500 hover:text-slate-900 inline-flex items-center gap-1">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg> My Servers

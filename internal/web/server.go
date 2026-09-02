@@ -104,6 +104,13 @@ func (s *Server) discordName(r *http.Request) string {
 	return ""
 }
 
+func (s *Server) discordAvatar(r *http.Request) string {
+	if c, err := r.Cookie("discord_avatar"); err == nil {
+		return c.Value
+	}
+	return ""
+}
+
 func (s *Server) cookieSecure() bool {
 	return strings.HasPrefix(s.cfg.WebURL, "https://")
 }
@@ -209,7 +216,8 @@ func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	_ = pages.Landing(s.isAdmin(r), s.discordName(r), s.cfg.DiscordClientID).Render(r.Context(), w)
+	s.log.Info("handleRoot avatar", "avatar", s.discordAvatar(r), "cookies", r.Header.Get("Cookie"))
+	_ = pages.Landing(s.isAdmin(r), s.discordName(r), s.discordAvatar(r), s.cfg.DiscordClientID).Render(r.Context(), w)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -222,7 +230,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	expCount, _ := s.store.Count(r.Context())
 	voteCount, _ := s.store.CountVotes(r.Context())
 	verifiedCount, _ := s.store.CountVerifiedUsers(r.Context())
-	_ = pages.Dashboard(guildCount, expCount, voteCount, verifiedCount, s.isAdmin(r), s.discordName(r), s.cfg.DiscordClientID).Render(r.Context(), w)
+	_ = pages.Dashboard(guildCount, expCount, voteCount, verifiedCount, s.isAdmin(r), s.discordName(r), s.discordAvatar(r), s.cfg.DiscordClientID).Render(r.Context(), w)
 }
 
 func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {
@@ -250,7 +258,7 @@ func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {
 	for _, c := range configs {
 		cfgMap[c.GuildID] = c
 	}
-	_ = pages.Guilds(adminGuilds, cfgMap, s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+	_ = pages.Guilds(adminGuilds, cfgMap, s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
@@ -334,7 +342,7 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 	if memberCount == 0 {
 		memberCount = -1 // unknown in web HMR, hide
 	}
-	_ = pages.GuildDetail(guildID, guildName, guildIcon, memberCount, feedChannelName, verifyChannelName, cfg, bindings, reactionRoles, s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+	_ = pages.GuildDetail(guildID, guildName, guildIcon, memberCount, feedChannelName, verifyChannelName, cfg, bindings, reactionRoles, s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func keys(m map[string]bool) []string {
@@ -361,11 +369,11 @@ func (s *Server) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
 			guildID = c.Value
 		}
 	}
-	_ = pages.Verify(s.isAdmin(r), s.discordName(r), verified, guildID).Render(r.Context(), w)
+	_ = pages.Verify(s.isAdmin(r), s.discordName(r), s.discordAvatar(r), verified, guildID).Render(r.Context(), w)
 }
 
 func (s *Server) handleGuide(w http.ResponseWriter, r *http.Request) {
-	_ = pages.Guide(s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+	_ = pages.Guide(s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
@@ -373,15 +381,15 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	expCount, _ := s.store.Count(r.Context())
 	voteCount, _ := s.store.CountVotes(r.Context())
 	botOnline := s.discord != nil
-	_ = pages.Status(s.isAdmin(r), s.discordName(r), botOnline, guildCount, expCount, voteCount).Render(r.Context(), w)
+	_ = pages.Status(s.isAdmin(r), s.discordName(r), s.discordAvatar(r), botOnline, guildCount, expCount, voteCount).Render(r.Context(), w)
 }
 
 func (s *Server) handlePrivacy(w http.ResponseWriter, r *http.Request) {
-	_ = pages.Privacy(s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+	_ = pages.Privacy(s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleTerms(w http.ResponseWriter, r *http.Request) {
-	_ = pages.Terms(s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+	_ = pages.Terms(s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleListGuilds(w http.ResponseWriter, r *http.Request) {
@@ -654,10 +662,20 @@ func (s *Server) handleDiscordCallback(w http.ResponseWriter, r *http.Request) {
 	var user struct {
 		ID       string `json:"id"`
 		Username string `json:"username"`
+		Avatar   string `json:"avatar"`
 	}
 	_ = json.NewDecoder(resp2.Body).Decode(&user)
+	avatarURL := ""
+	if user.Avatar != "" {
+		ext := "png"
+		if len(user.Avatar) > 0 && user.Avatar[0:2] == "a_" {
+			ext = "gif"
+		}
+		avatarURL = fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.%s?size=64", user.ID, user.Avatar, ext)
+	}
 	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: user.ID, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: user.Username, Path: "/", MaxAge: 86400 * 7, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	http.SetCookie(w, &http.Cookie{Name: "discord_avatar", Value: avatarURL, Path: "/", MaxAge: 86400 * 7, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.SetCookie(w, &http.Cookie{Name: "discord_token", Value: tok.AccessToken, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.Redirect(w, r, "/dashboard?discord=ok", http.StatusFound)
 }
@@ -666,6 +684,7 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.SetCookie(w, &http.Cookie{Name: "discord_token", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	http.SetCookie(w, &http.Cookie{Name: "discord_avatar", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.Redirect(w, r, "/dashboard", http.StatusFound)
 }
 

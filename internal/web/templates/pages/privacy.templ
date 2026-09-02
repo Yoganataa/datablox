@@ -2,8 +2,8 @@ package pages
 
 import "datablox/internal/web/templates/layouts"
 
-templ Privacy(isAdmin bool, discordName string) {
-	@layouts.Base("Datablox - Privacy Policy", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, Lang: "en"}) {
+templ Privacy(isAdmin bool, discordName, discordAvatar string) {
+	@layouts.Base("Datablox - Privacy Policy", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar, Lang: "en"}) {
 		<div class="max-w-4xl mx-auto">
 			<div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0055ff] text-white p-8 sm:p-10 shadow-2xl shadow-slate-900/30 relative overflow-hidden">
 				<div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-[#00A2FF]/30 blur-3xl"></div>

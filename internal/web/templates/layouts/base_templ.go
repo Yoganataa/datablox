@@ -11,9 +11,10 @@ import templruntime "github.com/a-h/templ/runtime"
 import _ "datablox/utils" // keep for TwMerge if needed
 
 type Nav struct {
-	IsAdmin     bool
-	DiscordName string
-	Lang        string
+	IsAdmin       bool
+	DiscordName   string
+	DiscordAvatar string
+	Lang          string
 }
 
 func (n Nav) LangOrDefault() string {
@@ -80,7 +81,7 @@ func Base(title string, nav Nav) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(nav.LangOrDefault())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 28, Col: 33}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 29, Col: 33}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 		if templ_7745c5c3_Err != nil {
@@ -93,7 +94,7 @@ func Base(title string, nav Nav) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 32, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 33, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -112,30 +113,84 @@ func Base(title string, nav Nav) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if nav.DiscordName != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"relative group ml-2\"><button class=\"flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\"><span class=\"hidden sm:inline\">Hi, ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"relative group ml-2\"><button class=\"flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var5 string
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(nav.DiscordName)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 54, Col: 61}
+			if nav.DiscordAvatar != "" {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<img src=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var5 string
+				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.ResolveAttributeValue(nav.DiscordAvatar)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 56, Col: 38}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" alt=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var6 string
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.ResolveAttributeValue(nav.DiscordName)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 56, Col: 62}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" class=\"w-7 h-7 rounded-full object-cover border border-slate-200\"> ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"w-7 h-7 rounded-full bg-gradient-to-br from-[#5865F2] to-[#00A2FF] text-white grid place-items-center text-xs font-bold\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var7 string
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(nav.DiscordName[:1])
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 58, Col: 164}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<span class=\"hidden sm:inline\">Hi, ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</span> <svg class=\"w-4 h-4 text-slate-400\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div class=\"absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-2 hidden group-hover:block z-50\"><a href=\"/dashboard/guilds\" class=\"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50\">My Servers</a> <a href=\"/dashboard\" class=\"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50\">Dashboard</a><div class=\"border-t border-slate-100 my-1\"></div><a href=\"/logout\" hx-boost=\"false\" class=\"block px-4 py-2 text-sm text-red-600 hover:bg-red-50\">Logout</a></div></div>")
+			var templ_7745c5c3_Var8 string
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(nav.DiscordName)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 60, Col: 61}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</span> <svg class=\"w-4 h-4 text-slate-400\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div class=\"absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-2 hidden group-hover:block z-50\"><a href=\"/dashboard/guilds\" class=\"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50\">My Servers</a> <a href=\"/dashboard\" class=\"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50\">Dashboard</a><div class=\"border-t border-slate-100 my-1\"></div><a href=\"/logout\" hx-boost=\"false\" class=\"block px-4 py-2 text-sm text-red-600 hover:bg-red-50\">Logout</a></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<a href=\"/auth/discord/login\" hx-boost=\"false\" class=\"ml-1 inline-flex items-center gap-2 text-sm font-semibold text-white bg-[#5865F2] px-4 py-2 rounded-full shadow-md shadow-blue-500/30 hover:bg-[#4752c4] hover:shadow-lg hover:scale-[1.03] transition-all\"><svg class=\"w-4 h-4\" fill=\"currentColor\" viewBox=\"0 0 24 24\"><path d=\"M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z\"></path></svg> Login with Discord</a>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<a href=\"/auth/discord/login\" hx-boost=\"false\" class=\"ml-1 inline-flex items-center gap-2 text-sm font-semibold text-white bg-[#5865F2] px-4 py-2 rounded-full shadow-md shadow-blue-500/30 hover:bg-[#4752c4] hover:shadow-lg hover:scale-[1.03] transition-all\"><svg class=\"w-4 h-4\" fill=\"currentColor\" viewBox=\"0 0 24 24\"><path d=\"M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z\"></path></svg> Login with Discord</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div></div></nav><main class=\"relative z-10 max-w-[1200px] mx-auto px-6 py-10 min-h-[calc(100vh-12rem)]\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div></div></nav><main class=\"relative z-10 max-w-[1200px] mx-auto px-6 py-10 min-h-[calc(100vh-12rem)]\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -143,7 +198,7 @@ func Base(title string, nav Nav) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</main><footer class=\"relative z-10 max-w-[1200px] mx-auto px-6 pb-10 mt-14\"><div class=\"rounded-2xl bg-gradient-to-r from-[#00A2FF]/10 via-[#5865F2]/10 to-[#00A2FF]/10 border border-slate-200/60 px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3\"><div class=\"flex items-center gap-2 text-sm text-slate-500\"><div class=\"w-6 h-6 rounded-lg bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-[9px] font-bold\">DB</div><span>Datablox — verify your Roblox account via Discord</span></div><div class=\"flex items-center gap-4\"><a href=\"/guide\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Guide</a><a href=\"/status\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Status</a><a href=\"/privacy\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Privacy</a><a href=\"/terms\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Terms</a></div></div></footer></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</main><footer class=\"relative z-10 max-w-[1200px] mx-auto px-6 pb-10 mt-14\"><div class=\"rounded-2xl bg-gradient-to-r from-[#00A2FF]/10 via-[#5865F2]/10 to-[#00A2FF]/10 border border-slate-200/60 px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3\"><div class=\"flex items-center gap-2 text-sm text-slate-500\"><div class=\"w-6 h-6 rounded-lg bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-[9px] font-bold\">DB</div><span>Datablox — verify your Roblox account via Discord</span></div><div class=\"flex items-center gap-4\"><a href=\"/guide\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Guide</a><a href=\"/status\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Status</a><a href=\"/privacy\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Privacy</a><a href=\"/terms\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Terms</a></div></div></footer></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

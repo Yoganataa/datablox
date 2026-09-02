@@ -4,8 +4,8 @@ import (
 	"datablox/internal/web/templates/layouts"
 )
 
-templ Landing(isAdmin bool, discordName, clientID string) {
-	@layouts.Base("Datablox — Roblox Verification", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName}) {
+templ Landing(isAdmin bool, discordName, discordAvatar, clientID string) {
+	@layouts.Base("Datablox — Roblox Verification", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
 		<div class="mx-auto max-w-4xl">
 			<!-- Hero -->
 			<div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0055ff] via-[#0088ff] to-[#00d4ff] text-white shadow-2xl shadow-blue-500/30">
