@@ -45,5 +45,14 @@ type Store interface {
 	ListReactionRoles(ctx context.Context, guildID string) ([]model.ReactionRole, error)
 	ListReactionRolesByMessage(ctx context.Context, guildID, messageID string) ([]model.ReactionRole, error)
 	DeleteReactionRole(ctx context.Context, id int64, guildID string) error
+	CreateInfraction(ctx context.Context, inf model.Infraction) (int64, error)
+	ListInfractions(ctx context.Context, guildID, userID string) ([]model.Infraction, error)
+	GetAutomodConfig(ctx context.Context, guildID string) (model.AutomodConfig, error)
+	SetAutomodConfig(ctx context.Context, cfg model.AutomodConfig) error
+	GetLevel(ctx context.Context, guildID, userID string) (model.Level, error)
+	SetLevel(ctx context.Context, lvl model.Level) error
+	Leaderboard(ctx context.Context, guildID string, limit int) ([]model.Level, error)
+	GetWelcomeConfig(ctx context.Context, guildID string) (model.WelcomeConfig, error)
+	SetWelcomeConfig(ctx context.Context, cfg model.WelcomeConfig) error
 	Close() error
 }

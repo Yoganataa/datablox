@@ -15,7 +15,6 @@ func Commands() []*discordgo.ApplicationCommand {
 			Name: g, Value: g,
 		})
 	}
-
 	genreOpt := &discordgo.ApplicationCommandOption{
 		Name:        "genre",
 		Description: "Filter by genre",
@@ -23,8 +22,8 @@ func Commands() []*discordgo.ApplicationCommand {
 		Required:    false,
 		Choices:     genreChoices,
 	}
-
-	return []*discordgo.ApplicationCommand{
+	manageGuild := int64(discordgo.PermissionManageGuild)
+	base := []*discordgo.ApplicationCommand{
 		{
 			Name:        "datablox",
 			Description: "Open Datablox dashboard (central panel)",
@@ -33,12 +32,7 @@ func Commands() []*discordgo.ApplicationCommand {
 			Name:        "add",
 			Description: "Add a Roblox experience to the catalog",
 			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Name:        "url",
-					Description: "Roblox experience URL or ID (e.g. https://www.roblox.com/games/123/Fisch)",
-					Type:        discordgo.ApplicationCommandOptionString,
-					Required:    true,
-				},
+				{Name: "url", Description: "Roblox experience URL or ID (e.g. https://www.roblox.com/games/123/Fisch)", Type: discordgo.ApplicationCommandOptionString, Required: true},
 				genreOpt,
 			},
 		},
@@ -46,19 +40,16 @@ func Commands() []*discordgo.ApplicationCommand {
 			Name:        "search",
 			Description: "Search experiences (shortcut, also in /datablox)",
 			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Name:         "query",
-					Description:  "Keyword (name or description)",
-					Type:         discordgo.ApplicationCommandOptionString,
-					Required:     true,
-					Autocomplete: true,
-				},
+				{Name: "query", Description: "Keyword (name or description)", Type: discordgo.ApplicationCommandOptionString, Required: true, Autocomplete: true},
 				genreOpt,
 			},
 		},
 		{
 			Name:        "config",
 			Description: "Open configuration panel (feed channel, genre)",
+			DefaultMemberPermissions: &manageGuild,
 		},
 	}
+	mods := moderationCommands()
+	return append(base, mods...)
 }

@@ -112,6 +112,17 @@ func (s *Store) migrate() error {
 			}
 		}
 	}
+	if sqlB, err := migrationsFS.ReadFile("migrations/0008_manager.sql"); err == nil {
+		for _, stmt := range strings.Split(string(sqlB), ";") {
+			stmt = strings.TrimSpace(stmt)
+			if stmt == "" {
+				continue
+			}
+			if _, err := s.db.Exec(stmt); err != nil && !strings.Contains(err.Error(), "already exists") && !strings.Contains(err.Error(), "duplicate column name") {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
@@ -672,4 +683,122 @@ func (s *Store) DeleteReactionRole(ctx context.Context, id int64, guildID string
 	_, err := s.db.ExecContext(ctx, "DELETE FROM reaction_roles WHERE id = ? AND guild_id = ?", id, guildID)
 	return err
 }
+func (s *Store) CreateInfraction(ctx context.Context, inf model.Infraction) (int64, error) {
+	res, err := s.db.ExecContext(ctx, "INSERT INTO infractions (guild_id, user_id, moderator_id, type, reason, expires_at, active) VALUES (?, ?, ?, ?, ?, ?, 1)", inf.GuildID, inf.UserID, inf.ModeratorID, inf.Type, inf.Reason, inf.ExpiresAt)
+	if err != nil {
+		return 0, err
+	}
+	return res.LastInsertId()
+}
+
+func (s *Store) ListInfractions(ctx context.Context, guildID, userID string) ([]model.Infraction, error) {
+	q := "SELECT id, guild_id, user_id, moderator_id, type, reason, created_at, expires_at, active FROM infractions WHERE guild_id = ?"
+	args := []any{guildID}
+	if userID != "" {
+		q += " AND user_id = ?"
+		args = append(args, userID)
+	}
+	q += " ORDER BY created_at DESC LIMIT 100"
+	rows, err := s.db.QueryContext(ctx, q, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []model.Infraction
+	for rows.Next() {
+		var inf model.Infraction
+		var created sql.NullString
+		var expires sql.NullString
+		var active int
+		if err := rows.Scan(&inf.ID, &inf.GuildID, &inf.UserID, &inf.ModeratorID, &inf.Type, &inf.Reason, &created, &expires, &active); err != nil {
+			return nil, err
+		}
+		if _, t, ok := parseSQLiteTime(created); ok {
+			inf.CreatedAt = t
+		}
+		if _, t, ok := parseSQLiteTime(expires); ok {
+			inf.ExpiresAt = &t
+		}
+		inf.Active = active != 0
+		out = append(out, inf)
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) GetAutomodConfig(ctx context.Context, guildID string) (model.AutomodConfig, error) {
+	var cfg model.AutomodConfig
+	err := s.db.QueryRowContext(ctx, "SELECT guild_id, anti_spam, anti_invite, mass_mention, ghost_ping FROM automod_config WHERE guild_id = ?", guildID).Scan(&cfg.GuildID, &cfg.AntiSpam, &cfg.AntiInvite, &cfg.MassMention, &cfg.GhostPing)
+	if err == sql.ErrNoRows {
+		return model.AutomodConfig{GuildID: guildID, MassMention: 5}, nil
+	}
+	return cfg, err
+}
+
+func (s *Store) SetAutomodConfig(ctx context.Context, cfg model.AutomodConfig) error {
+	_, err := s.db.ExecContext(ctx, "INSERT INTO automod_config (guild_id, anti_spam, anti_invite, mass_mention, ghost_ping, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(guild_id) DO UPDATE SET anti_spam=excluded.anti_spam, anti_invite=excluded.anti_invite, mass_mention=excluded.mass_mention, ghost_ping=excluded.ghost_ping, updated_at=CURRENT_TIMESTAMP", cfg.GuildID, cfg.AntiSpam, cfg.AntiInvite, cfg.MassMention, cfg.GhostPing)
+	return err
+}
+
+func (s *Store) GetLevel(ctx context.Context, guildID, userID string) (model.Level, error) {
+	var lvl model.Level
+	var last sql.NullString
+	err := s.db.QueryRowContext(ctx, "SELECT guild_id, user_id, xp, level, messages, last_xp_at FROM levels WHERE guild_id = ? AND user_id = ?", guildID, userID).Scan(&lvl.GuildID, &lvl.UserID, &lvl.XP, &lvl.Level, &lvl.Messages, &last)
+	if err == sql.ErrNoRows {
+		return model.Level{GuildID: guildID, UserID: userID}, nil
+	}
+	if err != nil {
+		return lvl, err
+	}
+	if _, t, ok := parseSQLiteTime(last); ok {
+		lvl.LastXPAt = &t
+	}
+	return lvl, nil
+}
+
+func (s *Store) SetLevel(ctx context.Context, lvl model.Level) error {
+	_, err := s.db.ExecContext(ctx, "INSERT INTO levels (guild_id, user_id, xp, level, messages, last_xp_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(guild_id, user_id) DO UPDATE SET xp=excluded.xp, level=excluded.level, messages=excluded.messages, last_xp_at=excluded.last_xp_at", lvl.GuildID, lvl.UserID, lvl.XP, lvl.Level, lvl.Messages, lvl.LastXPAt)
+	return err
+}
+
+func (s *Store) Leaderboard(ctx context.Context, guildID string, limit int) ([]model.Level, error) {
+	rows, err := s.db.QueryContext(ctx, "SELECT guild_id, user_id, xp, level, messages, last_xp_at FROM levels WHERE guild_id = ? ORDER BY xp DESC LIMIT ?", guildID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []model.Level
+	for rows.Next() {
+		var lvl model.Level
+		var last sql.NullString
+		if err := rows.Scan(&lvl.GuildID, &lvl.UserID, &lvl.XP, &lvl.Level, &lvl.Messages, &last); err != nil {
+			return nil, err
+		}
+		if _, t, ok := parseSQLiteTime(last); ok {
+			lvl.LastXPAt = &t
+		}
+		out = append(out, lvl)
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) GetWelcomeConfig(ctx context.Context, guildID string) (model.WelcomeConfig, error) {
+	var cfg model.WelcomeConfig
+	var enabled int
+	err := s.db.QueryRowContext(ctx, "SELECT guild_id, channel_id, message, auto_role_id, enabled FROM welcome_config WHERE guild_id = ?", guildID).Scan(&cfg.GuildID, &cfg.ChannelID, &cfg.Message, &cfg.AutoRoleID, &enabled)
+	if err == sql.ErrNoRows {
+		return model.WelcomeConfig{GuildID: guildID}, nil
+	}
+	cfg.Enabled = enabled != 0
+	return cfg, err
+}
+
+func (s *Store) SetWelcomeConfig(ctx context.Context, cfg model.WelcomeConfig) error {
+	enabled := 0
+	if cfg.Enabled {
+		enabled = 1
+	}
+	_, err := s.db.ExecContext(ctx, "INSERT INTO welcome_config (guild_id, channel_id, message, auto_role_id, enabled, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(guild_id) DO UPDATE SET channel_id=excluded.channel_id, message=excluded.message, auto_role_id=excluded.auto_role_id, enabled=excluded.enabled, updated_at=CURRENT_TIMESTAMP", cfg.GuildID, cfg.ChannelID, cfg.Message, cfg.AutoRoleID, enabled)
+	return err
+}
+
 

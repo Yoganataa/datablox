@@ -65,6 +65,9 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/api/guilds", s.handleListGuilds)
 	s.mux.HandleFunc("/api/bindings", s.handleBindings)
 	s.mux.HandleFunc("/api/reaction-roles", s.handleReactionRoles)
+	s.mux.HandleFunc("/api/automod", s.handleAutomod)
+	s.mux.HandleFunc("/api/welcome", s.handleWelcome)
+	s.mux.HandleFunc("/api/levels", s.handleLevels)
 	s.mux.HandleFunc("/auth/discord/login", s.handleDiscordLogin)
 	s.mux.HandleFunc("/auth/discord/callback", s.handleDiscordCallback)
 	s.mux.HandleFunc("/auth/roblox/login", s.handleRobloxLogin)
@@ -368,6 +371,81 @@ func (s *Server) handleReactionRoles(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func (s *Server) handleAutomod(w http.ResponseWriter, r *http.Request) {
+	if !s.isAdmin(r) {
+		http.Error(w, "admin only", http.StatusUnauthorized)
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		gid := r.URL.Query().Get("guild_id")
+		if !s.isGuildAdmin(r, gid) {
+			http.Error(w, "not admin", http.StatusForbidden)
+			return
+		}
+		cfg, _ := s.store.GetAutomodConfig(r.Context(), gid)
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(cfg)
+	case http.MethodPost:
+		var cfg model.AutomodConfig
+		if err := json.NewDecoder(r.Body).Decode(&cfg); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if !s.isGuildAdmin(r, cfg.GuildID) {
+			http.Error(w, "not admin", http.StatusForbidden)
+			return
+		}
+		_ = s.store.SetAutomodConfig(r.Context(), cfg)
+		w.WriteHeader(http.StatusNoContent)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (s *Server) handleWelcome(w http.ResponseWriter, r *http.Request) {
+	if !s.isAdmin(r) {
+		http.Error(w, "admin only", http.StatusUnauthorized)
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		gid := r.URL.Query().Get("guild_id")
+		if !s.isGuildAdmin(r, gid) {
+			http.Error(w, "not admin", http.StatusForbidden)
+			return
+		}
+		cfg, _ := s.store.GetWelcomeConfig(r.Context(), gid)
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(cfg)
+	case http.MethodPost:
+		var cfg model.WelcomeConfig
+		if err := json.NewDecoder(r.Body).Decode(&cfg); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if !s.isGuildAdmin(r, cfg.GuildID) {
+			http.Error(w, "not admin", http.StatusForbidden)
+			return
+		}
+		_ = s.store.SetWelcomeConfig(r.Context(), cfg)
+		w.WriteHeader(http.StatusNoContent)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (s *Server) handleLevels(w http.ResponseWriter, r *http.Request) {
+	gid := r.URL.Query().Get("guild_id")
+	if gid == "" {
+		http.Error(w, "guild_id required", http.StatusBadRequest)
+		return
+	}
+	levels, _ := s.store.Leaderboard(r.Context(), gid, 20)
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(levels)
 }
 
 func (s *Server) handleDiscordLogin(w http.ResponseWriter, r *http.Request) {

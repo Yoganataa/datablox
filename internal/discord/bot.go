@@ -39,6 +39,9 @@ func (b *Bot) Session() *discordgo.Session { return b.sess }
 
 func (b *Bot) Run(ctx context.Context) error {
 	b.sess.AddHandler(b.onInteraction)
+	b.sess.AddHandler(b.onMessageCreate)
+	b.sess.AddHandler(b.onMessageDelete)
+	b.sess.AddHandler(b.onGuildMemberAdd)
 	b.sess.AddHandler(b.onReactionAdd)
 	b.sess.AddHandler(b.onReactionRemove)
 	if err := b.sess.Open(); err != nil {
@@ -116,6 +119,20 @@ func (b *Bot) onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate
 			b.handleSearch(ctx, i, data)
 		case "config":
 			b.handleConfig(ctx, i, data)
+		case "warn":
+			b.handleWarn(ctx, i, data)
+		case "mute":
+			b.handleMute(ctx, i, data)
+		case "ban":
+			b.handleBan(ctx, i, data)
+		case "kick":
+			b.handleKick(ctx, i, data)
+		case "purge":
+			b.handlePurge(ctx, i, data)
+		case "level":
+			b.handleLevel(ctx, i, data)
+		case "leaderboard":
+			b.handleLeaderboard(ctx, i, data)
 		default:
 			respondText(s, i, "Unknown command.")
 		}

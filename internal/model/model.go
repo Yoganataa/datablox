@@ -68,6 +68,43 @@ type ReactionRole struct {
 	CreatedAt time.Time
 }
 
+
+type Infraction struct {
+	ID          int64
+	GuildID     string
+	UserID      string
+	ModeratorID string
+	Type        string
+	Reason      string
+	CreatedAt   time.Time
+	ExpiresAt   *time.Time
+	Active      bool
+}
+
+type AutomodConfig struct {
+	GuildID     string
+	AntiSpam    bool
+	AntiInvite  bool
+	MassMention int
+	GhostPing   bool
+}
+
+type Level struct {
+	GuildID  string
+	UserID   string
+	XP       int
+	Level    int
+	Messages int
+	LastXPAt *time.Time
+}
+
+type WelcomeConfig struct {
+	GuildID    string
+	ChannelID  string
+	Message    string
+	AutoRoleID string
+	Enabled    bool
+}
 type GuildBinding struct {
 	ID               int64
 	GuildID          string

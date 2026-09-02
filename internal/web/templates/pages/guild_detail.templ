@@ -105,6 +105,27 @@ templ GuildDetail(guildID, guildName string, cfg model.GuildConfig, bindings []m
 				}
 			}
 			@card.Card() {
+				@card.Header() { @card.Title() { Moderation } }
+				@card.Content() {
+					<p class="text-sm text-slate-500">Warn/mute/ban/kick/purge via slash commands. Visible only to <code class="bg-slate-100 px-1 py-0.5 rounded text-xs">Manage Server</code>. History in <code>infractions</code> table.</p>
+					<div class="mt-2 text-xs text-slate-400">Commands: <code>/warn /mute /ban /kick /purge</code> — hidden from members.</div>
+				}
+			}
+			@card.Card() {
+				@card.Header() { @card.Title() { Leveling } }
+				@card.Content() {
+					<p class="text-sm text-slate-500">XP 15-25 per message, 60s cooldown, level up announcement. Check <code>/level</code> and <code>/leaderboard</code> (top 10).</p>
+					<div class="mt-2 text-xs text-slate-400">Store <code>levels(guild_id,user_id)</code> — API <code>GET /api/levels?guild_id=</code></div>
+				}
+			}
+			@card.Card() {
+				@card.Header() { @card.Title() { Welcome & AutoRole } }
+				@card.Content() {
+					<p class="text-sm text-slate-500">Join message + auto-role on GuildMemberAdd. Configure via API <code>POST /api/welcome</code>.</p>
+					<div class="mt-2 text-xs text-slate-400">Automod: <code>POST /api/automod</code> — deletes invites & mass mentions.</div>
+				}
+			}
+			@card.Card() {
 				@card.Header() {
 					<div class="flex items-center justify-between w-full">
 						@card.Title() { Group Bindings }
