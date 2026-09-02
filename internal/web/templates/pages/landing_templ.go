@@ -55,9 +55,9 @@ func Landing(isAdmin bool, discordName, discordAvatar, clientID string, guildCou
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var3 templ.SafeURL
-				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=8&scope=bot%20applications.commands"))
+				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=268435456&scope=bot%20applications.commands"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 26, Col: 145}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 26, Col: 153}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 				if templ_7745c5c3_Err != nil {
@@ -138,9 +138,9 @@ func Landing(isAdmin bool, discordName, discordAvatar, clientID string, guildCou
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 templ.SafeURL
-				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=8&scope=bot%20applications.commands"))
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=268435456&scope=bot%20applications.commands"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 110, Col: 144}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 110, Col: 152}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {

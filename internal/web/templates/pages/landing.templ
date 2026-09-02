@@ -23,7 +23,7 @@ templ Landing(isAdmin bool, discordName, discordAvatar, clientID string, guildCo
 					</p>
 					<div class="mt-8 flex flex-col sm:flex-row gap-3">
 						if clientID != "" {
-							<a href={ templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=8&scope=bot%20applications.commands") } target="_blank" rel="noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-blue-700 px-6 py-3.5 text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+							<a href={ templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=268435456&scope=bot%20applications.commands") } target="_blank" rel="noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-blue-700 px-6 py-3.5 text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
 								Invite Datablox
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
 							</a>
@@ -107,7 +107,7 @@ templ Landing(isAdmin bool, discordName, discordAvatar, clientID string, guildCo
 				</p>
 				<div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
 					if clientID != "" {
-						<a href={ templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=8&scope=bot%20applications.commands") } target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#5865F2] to-[#7c4dff] text-white px-7 py-3.5 text-sm font-bold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+						<a href={ templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=268435456&scope=bot%20applications.commands") } target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#5865F2] to-[#7c4dff] text-white px-7 py-3.5 text-sm font-bold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
 							Invite Bot
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
 						</a>
