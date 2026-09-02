@@ -65,7 +65,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 				return templ_7745c5c3_Err
 			}
 			if discordName != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<a href=\"/dashboard/guilds\" class=\"inline-flex items-center gap-2 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white px-5 py-2.5 text-sm font-semibold hover:bg-white/20 transition-colors\">My Servers</a>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<a href=\"/guilds\" class=\"inline-flex items-center gap-2 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white px-5 py-2.5 text-sm font-semibold hover:bg-white/20 transition-colors\">My Servers</a>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

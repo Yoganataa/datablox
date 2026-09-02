@@ -39,7 +39,7 @@ templ Guilds(userGuilds []model.DiscordGuild, cfgMap map[string]model.GuildConfi
 }
 
 templ guildCard(g model.DiscordGuild, cfg model.GuildConfig) {
-	<a href={ templ.SafeURL("/dashboard/guild/" + g.ID) } class="group rounded-2xl bg-white border border-slate-200/80 shadow-sm p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all flex flex-col gap-3">
+	<a href={ templ.SafeURL("/guild/" + g.ID) } class="group rounded-2xl bg-white border border-slate-200/80 shadow-sm p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all flex flex-col gap-3">
 		<div class="flex items-center gap-3">
 			if g.Icon != "" {
 				<img src={ "https://cdn.discordapp.com/icons/" + g.ID + "/" + g.Icon + ".png?size=64" } alt={ g.Name } class="w-10 h-10 rounded-xl object-cover"/>

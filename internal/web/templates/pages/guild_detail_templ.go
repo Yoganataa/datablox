@@ -51,7 +51,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"max-w-5xl mx-auto flex flex-col gap-6\"><a href=\"/dashboard/guilds\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 inline-flex items-center gap-1\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M15 19l-7-7 7-7\"></path></svg> My Servers</a><div class=\"rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0055ff] text-white p-8 shadow-xl relative overflow-hidden\"><div class=\"absolute -right-10 -top-10 w-44 h-44 rounded-full bg-[#00A2FF]/30 blur-3xl\"></div><div class=\"relative flex items-center gap-4\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"max-w-5xl mx-auto flex flex-col gap-6\"><a href=\"/guilds\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 inline-flex items-center gap-1\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M15 19l-7-7 7-7\"></path></svg> My Servers</a><div class=\"rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0055ff] text-white p-8 shadow-xl relative overflow-hidden\"><div class=\"absolute -right-10 -top-10 w-44 h-44 rounded-full bg-[#00A2FF]/30 blur-3xl\"></div><div class=\"relative flex items-center gap-4\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

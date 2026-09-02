@@ -54,7 +54,9 @@ func New(cfg *config.Config, st store.Store, log *slog.Logger, discord *discordg
 func (s *Server) routes() {
 	s.mux.HandleFunc("/", s.handleRoot)
 	s.mux.HandleFunc("/dashboard", s.handleDashboard)
-	s.mux.HandleFunc("/dashboard/guilds", s.handleGuilds)
+	s.mux.HandleFunc("/guilds", s.handleGuilds)
+	s.mux.HandleFunc("/guild/", s.handleGuildDetail)
+	s.mux.HandleFunc("/guilds", s.handleGuilds)
 	s.mux.HandleFunc("/dashboard/guild/", s.handleGuildDetail)
 	s.mux.HandleFunc("/verify", s.handleVerifyPage)
 	s.mux.HandleFunc("/privacy", s.handlePrivacy)
@@ -238,7 +240,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/auth/discord/login", http.StatusFound)
 		return
 	}
-	http.Redirect(w, r, "/dashboard/guilds", http.StatusFound)
+	http.Redirect(w, r, "/guilds", http.StatusFound)
 }
 
 func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {
@@ -270,7 +272,12 @@ func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
-	guildID := strings.TrimPrefix(r.URL.Path, "/dashboard/guild/")
+	guildID := r.URL.Path
+	if strings.HasPrefix(guildID, "/dashboard/guild/") {
+		guildID = strings.TrimPrefix(guildID, "/dashboard/guild/")
+	} else {
+		guildID = strings.TrimPrefix(guildID, "/guild/")
+	}
 	if idx := strings.Index(guildID, "/"); idx >= 0 {
 		guildID = guildID[:idx]
 	}
