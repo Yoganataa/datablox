@@ -215,14 +215,34 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 	}
 	cfg, _ := s.store.GetGuildConfig(r.Context(), guildID)
 	bindings, _ := s.store.ListBindings(r.Context(), guildID)
-	// Fetch guild name via Discord bot if available
+	reactionRoles, _ := s.store.ListReactionRoles(r.Context(), guildID)
+	// Fetch guild details for header (name, icon, members)
 	guildName := guildID
+	guildIcon := ""
+	memberCount := 0
 	if s.discord != nil {
 		if g, err := s.discord.Guild(guildID); err == nil && g != nil {
 			guildName = g.Name
+			guildIcon = g.Icon
+			memberCount = g.MemberCount
 		}
 	}
-	_ = pages.GuildDetail(guildID, guildName, cfg, bindings, s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+	// Resolve channel names for display (fallback to ID)
+	feedChannelName := ""
+	verifyChannelName := ""
+	if s.discord != nil {
+		if cfg.ChannelID != "" {
+			if ch, err := s.discord.Channel(cfg.ChannelID); err == nil && ch != nil {
+				feedChannelName = "#" + ch.Name
+			}
+		}
+		if cfg.VerifyChannelID != "" {
+			if ch, err := s.discord.Channel(cfg.VerifyChannelID); err == nil && ch != nil {
+				verifyChannelName = "#" + ch.Name
+			}
+		}
+	}
+	_ = pages.GuildDetail(guildID, guildName, guildIcon, memberCount, feedChannelName, verifyChannelName, cfg, bindings, reactionRoles, s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
 }
 
 func keys(m map[string]bool) []string {
