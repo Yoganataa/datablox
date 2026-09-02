@@ -14,6 +14,19 @@ templ Privacy(isAdmin bool, discordName string) {
 					<p class="mt-2 text-white/70 text-sm">Datablox • https://datablox.devest.live • Scopes: <code class="bg-white/20 px-1.5 py-0.5 rounded text-xs">openid profile</code> · Category: Account Linking Tools</p>
 				</div>
 			</div>
+			<div class="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
+				<div class="flex items-start gap-3">
+					<div class="w-8 h-8 rounded-full bg-blue-500 text-white grid place-items-center text-sm">ⓘ</div>
+					<div>
+						<div class="font-bold text-sm text-slate-900">In short</div>
+						<ul class="mt-2 text-sm text-slate-700 list-disc pl-5 space-y-1">
+							<li>We only get your Discord username + servers you share & Roblox ID/username via official Roblox login — never password.</li>
+							<li>We save your votes, server settings, and role links, and delete when you unlink.</li>
+							<li>Temporary secure cookies only to keep login safe (5 minutes to 7 days).</li>
+						</ul>
+					</div>
+				</div>
+			</div>
 			<div class="mt-6 bg-white border border-slate-200/80 rounded-2xl shadow-sm">
 				<div class="p-6 sm:p-8 text-sm leading-relaxed text-slate-700 space-y-7 [&_h2]:text-[15px] [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:text-slate-900 [&_h2]:mt-2 [&_a]:text-[#0055ff] [&_a]:underline-offset-4 hover:[&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5 [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[13px]">
 					<section>
@@ -23,11 +36,11 @@ templ Privacy(isAdmin bool, discordName string) {
 					<section>
 						<h2>2. Data We Collect</h2>
 						<ul>
-							<li><b>Discord:</b> Discord user ID, username, guild ID, guild roles, and interaction data (slash commands, button/select interactions) via Discord Gateway and, if you log in to the dashboard, via Discord OAuth2 (<code>identify guilds</code>). We store <code>discord_id</code> and <code>discord_name</code> in secure HttpOnly cookies.</li>
-							<li><b>Roblox OAuth (PKCE):</b> When you click "Verify with Datablox" (Discord Link Button → <code>/auth/roblox/login</code>), we use PKCE S256 to request <code>openid profile</code>. After you authorize, we receive an <code>id_token</code> (ES256, verified via <code>https://apis.roblox.com/oauth/v1/certs</code>) and <code>access_token</code> to call <code>/oauth/v1/userinfo</code>. We store only <code>roblox_id (sub)</code>, <code>preferred_username</code>, and <code>name</code>. We do <b>not</b> collect your password, email, or <code>.ROBLOSECURITY</code>.</li>
-							<li><b>Roblox Public:</b> Experiences added via <code>/add</code> are fetched from <code>apis.roblox.com</code> / <code>games.roblox.com</code> (name, description, creator, playing, visits, thumbnails) and stored as <code>experiences</code>.</li>
-							<li><b>Votes &amp; Configuration:</b> Poll votes (<code>poll_votes</code>), guild feed config (<code>guild_config</code>), and optional group→role bindings (<code>guild_bindings</code>).</li>
-							<li><b>Technical:</b> Cloudflare Tunnel access logs, SQLite WAL, and standard web logs (IP, user-agent) for abuse prevention. No advertising trackers or third-party analytics.</li>
+							<li><b>Discord:</b> When you log in with Discord, we only see your Discord username and which servers you share with Datablox. We store a secure login cookie.</li>
+							<li><b>Roblox:</b> Clicking "Verify with Datablox" sends you to Roblox's official login. We only receive your Roblox ID and username — we never see your password.</li>
+							<li><b>Roblox Public:</b> Games you add are public Roblox game info (name, description, players) — we save what you see.</li>
+							<li><b>Votes & Configuration:</b> We save your votes, your server's channel settings, and which Discord roles match which Roblox ranks.</li>
+							<li><b>Technical:</b> Standard web logs (IP) for abuse prevention. No advertising trackers.</li>
 						</ul>
 					</section>
 					<section>
@@ -41,12 +54,12 @@ templ Privacy(isAdmin bool, discordName string) {
 					</section>
 					<section>
 						<h2>5. Storage, Retention &amp; Deletion</h2>
-						<p class="mt-2">Data is stored in SQLite (<code>./data/bot.db</code>, WAL) on our VPS and in-memory pending OAuth states (state, code_verifier, TTL 5 min). <code>verified_users</code> is kept until you unlink or request deletion. Poll votes are kept until the vote message is regenerated. We promptly delete data when it is no longer needed for the app's stated functionality, when you request it, when Discord/Roblox or law requires it, or when you stop operating the app.</p>
+						<p class="mt-2">Your data is stored securely on our server and deleted when you unlink or ask us to. Pending logins expire after 5 minutes. Poll votes are kept until the vote message is refreshed.</p>
 						<p class="mt-1">How to request deletion or correction: email <a href="mailto:support@devest.live">support@devest.live</a>, use <a href="/verify">/verify</a> help, or revoke OAuth directly at <a href="https://www.roblox.com/my/account">Roblox Apps</a> and <a href="https://discord.com/developers/applications">Discord Apps</a>.</p>
 					</section>
 					<section>
 						<h2>6. Cookies</h2>
-						<p class="mt-2">We use HttpOnly cookies <code>discord_id</code>, <code>discord_name</code>, <code>oauth_state</code>, <code>code_verifier</code> (Max-Age 5 min–7 days) only for OAuth CSRF protection and login. No tracking cookies.</p>
+						<p class="mt-2">We use temporary secure cookies only to keep your login safe. They expire after a few minutes to 7 days. No tracking cookies.</p>
 					</section>
 					<section>
 						<h2>7. Children's Privacy</h2>
