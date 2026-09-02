@@ -17,7 +17,7 @@ templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool
 						<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Bot is online
 					</div>
 					<h1 class="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight">Datablox</h1>
-					<p class="mt-2 text-white/70 text-sm sm:text-base">Server manager bot — Roblox catalog, voting, and Bloxlink-like verification. Manage your servers via Discord.</p>
+					<p class="mt-2 text-white/70 text-sm sm:text-base">All-in-one server manager for Roblox communities. Manage everything directly from Discord.</p>
 					<div class="mt-6 flex flex-wrap gap-3">
 						<a href={ templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=8&scope=bot%20applications.commands") } target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 px-5 py-2.5 text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
 							Invite Bot
@@ -56,19 +56,19 @@ templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool
 					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
 						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-4">
 							<div class="font-mono font-bold text-slate-900">/datablox</div>
-							<div class="text-slate-500 mt-1">Browse experiences — panel with filters and pagination.</div>
+							<div class="text-slate-500 mt-1">Browse and discover Roblox experiences with powerful filters.</div>
 						</div>
 						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-4">
 							<div class="font-mono font-bold text-slate-900">/add &lt;url&gt;</div>
-							<div class="text-slate-500 mt-1">Add a Roblox experience to the catalog.</div>
+							<div class="text-slate-500 mt-1">Add any Roblox experience to your server's catalog.</div>
 						</div>
 						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-4">
 							<div class="font-mono font-bold text-slate-900">/search &lt;query&gt;</div>
-							<div class="text-slate-500 mt-1">Search the catalog with FTS.</div>
+							<div class="text-slate-500 mt-1">Search the catalog instantly.</div>
 						</div>
 						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-4">
 							<div class="font-mono font-bold text-slate-900">/config</div>
-							<div class="text-slate-500 mt-1">Configure feed and verify channels (per server).</div>
+							<div class="text-slate-500 mt-1">Set up your feed and verification channels for each server.</div>
 						</div>
 					</div>
 				}
@@ -79,8 +79,8 @@ templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool
 				}
 				@card.Content() {
 					<p class="text-sm text-slate-600 leading-relaxed">
-						Each Discord server configures its own <b>feed channel</b> (vote + top10 + announcements) and <b>verify channel</b> (welcome + Verify button) via <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">/config</code> in Discord.
-						No server list is shown here to protect privacy. Server admins manage their guild via Discord permissions.
+						Each server has its own feed channel for voting and announcements, and a verification channel with a Verify button. Configure with <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">/config</code> in Discord.
+						Server data stays private. Only admins with Manage Server can configure their community.
 					</p>
 					if isAdmin {
 						<div class="mt-4 rounded-xl bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">

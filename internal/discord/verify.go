@@ -26,7 +26,7 @@ func (b *Bot) ensureVerifyMessage(ctx context.Context, guildID string) error {
 		Title:       fmt.Sprintf("Welcome to %s!", guildName),
 		Description: "Click the button below to Verify with Datablox and gain access to the rest of the server.",
 		Color:       0x5865F2,
-		Footer:      &discordgo.MessageEmbedFooter{Text: "Datablox • Bloxlink-like verification"},
+		Footer:      &discordgo.MessageEmbedFooter{Text: "Datablox • secure Roblox verification"},
 	}
 	verifyURL := strings.TrimRight(b.cfg.WebURL, "/") + "/auth/roblox/login?guild_id=" + guildID
 	components := []discordgo.MessageComponent{

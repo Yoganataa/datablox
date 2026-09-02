@@ -16,7 +16,7 @@ func GenerateBanner(username, avatarURL, serverName string, memberCount int) ([]
 	const W, H = 1000, 400
 	dc := gg.NewContext(W, H)
 
-	// Background gradient like MEE6/Carl: #0055ff -> #00d4ff
+	// Background gradient with a modern gradient: #0055ff -> #00d4ff
 	for y := 0; y < H; y++ {
 		t := float64(y) / float64(H)
 		r := uint8(0x00 + t*0x00)

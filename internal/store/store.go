@@ -34,7 +34,7 @@ type Store interface {
 	ToggleVote(ctx context.Context, v model.Vote) (bool, error)
 	GetVotesByMessage(ctx context.Context, messageID string) ([]model.Vote, error)
 	CountVotesByUniverse(ctx context.Context, messageID string, universeID int64) (int, error)
-	// Bloxlink-like verification + bindings
+	// secure Roblox verification + bindings
 	UpsertVerifiedUser(ctx context.Context, u model.VerifiedUser) error
 	GetVerifiedUser(ctx context.Context, discordID string) (model.VerifiedUser, error)
 	ListVerifiedUsers(ctx context.Context, limit int) ([]model.VerifiedUser, error)

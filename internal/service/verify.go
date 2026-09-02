@@ -12,7 +12,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// VerifyService handles Bloxlink-like role/nickname sync.
+// VerifyService handles secure role/nickname sync.
 type VerifyService struct {
 	Store   store.Store
 	Discord *discordgo.Session

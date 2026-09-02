@@ -42,7 +42,7 @@ func main() {
 	refresh := scheduler.New(log, svc, cfg.RefreshInterval, true)
 	defer refresh.Stop()
 
-	// Web dashboard (Bloxlink-like) — skip when running alongside `task web` to avoid :8003 conflict and lost OAuth state
+	// Web dashboard (secure) — skip when running alongside `task web` to avoid :8003 conflict and lost OAuth state
 	if os.Getenv("DISABLE_BOT_WEB") != "1" {
 		webSrv, err := web.New(cfg, st, log, bot.Session())
 		if err != nil {
