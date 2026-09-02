@@ -216,8 +216,10 @@ func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	s.log.Info("handleRoot avatar", "avatar", s.discordAvatar(r), "cookies", r.Header.Get("Cookie"))
-	_ = pages.Landing(s.isAdmin(r), s.discordName(r), s.discordAvatar(r), s.cfg.DiscordClientID).Render(r.Context(), w)
+	guildCount, _ := s.store.CountGuilds(r.Context())
+	expCount, _ := s.store.Count(r.Context())
+	voteCount, _ := s.store.CountVotes(r.Context())
+_ = pages.Landing(s.isAdmin(r), s.discordName(r), s.discordAvatar(r), s.cfg.DiscordClientID, guildCount, expCount, voteCount).Render(r.Context(), w)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -226,11 +228,11 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
-	guildCount, _ := s.store.CountGuilds(r.Context())
-	expCount, _ := s.store.Count(r.Context())
-	voteCount, _ := s.store.CountVotes(r.Context())
-	verifiedCount, _ := s.store.CountVerifiedUsers(r.Context())
-	_ = pages.Dashboard(guildCount, expCount, voteCount, verifiedCount, s.isAdmin(r), s.discordName(r), s.discordAvatar(r), s.cfg.DiscordClientID).Render(r.Context(), w)
+	if _, err := r.Cookie("discord_id"); err != nil {
+		http.Redirect(w, r, "/auth/discord/login", http.StatusFound)
+		return
+	}
+	http.Redirect(w, r, "/dashboard/guilds", http.StatusFound)
 }
 
 func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {
