@@ -146,6 +146,61 @@ func (s *Server) fetchUserGuilds(token string) []model.DiscordGuild {
 	return guilds
 }
 
+func (s *Server) fetchGuildViaBot(guildID string) (name, icon string, memberCount int) {
+	if s.cfg.DiscordToken == "" || guildID == "" {
+		return "", "", 0
+	}
+	req, _ := http.NewRequest("GET", "https://discord.com/api/v10/guilds/"+guildID+"?with_counts=true", nil)
+	req.Header.Set("Authorization", "Bot "+s.cfg.DiscordToken)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil || resp.StatusCode != 200 {
+		if resp != nil {
+			resp.Body.Close()
+		}
+		return "", "", 0
+	}
+	defer resp.Body.Close()
+	var g struct {
+		Name            string `json:"name"`
+		Icon            string `json:"icon"`
+		MemberCount     int    `json:"member_count"`
+		ApproxMemberCount int `json:"approximate_member_count"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&g); err != nil {
+		return "", "", 0
+	}
+	if g.MemberCount == 0 {
+		g.MemberCount = g.ApproxMemberCount
+	}
+	return g.Name, g.Icon, g.MemberCount
+}
+
+func (s *Server) fetchChannelViaBot(channelID string) string {
+	if s.cfg.DiscordToken == "" || channelID == "" {
+		return ""
+	}
+	req, _ := http.NewRequest("GET", "https://discord.com/api/v10/channels/"+channelID, nil)
+	req.Header.Set("Authorization", "Bot "+s.cfg.DiscordToken)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil || resp.StatusCode != 200 {
+		if resp != nil {
+			resp.Body.Close()
+		}
+		return ""
+	}
+	defer resp.Body.Close()
+	var ch struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&ch); err != nil {
+		return ""
+	}
+	if ch.Name != "" {
+		return "#" + ch.Name
+	}
+	return ""
+}
+
 
 func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
@@ -216,7 +271,7 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 	cfg, _ := s.store.GetGuildConfig(r.Context(), guildID)
 	bindings, _ := s.store.ListBindings(r.Context(), guildID)
 	reactionRoles, _ := s.store.ListReactionRoles(r.Context(), guildID)
-	// Fetch guild details for header (name, icon, members) — try bot cache first, fallback to user's guilds API
+	// Fetch guild details for header (name, icon, members) — try bot cache, fallback to Bot REST, then user's guilds
 	guildName := guildID
 	guildIcon := ""
 	memberCount := 0
@@ -228,12 +283,15 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if guildName == guildID {
-		// Fallback: use user's guilds (from OAuth) for name/icon when bot not in web HMR
-		if tok := ""; true {
-			if c, err := r.Cookie("discord_token"); err == nil {
-				tok = c.Value
-			}
-			for _, g := range s.fetchUserGuilds(tok) {
+		if n, ic, mc := s.fetchGuildViaBot(guildID); n != "" {
+			guildName = n
+			guildIcon = ic
+			memberCount = mc
+		}
+	}
+	if guildName == guildID {
+		if c, err := r.Cookie("discord_token"); err == nil {
+			for _, g := range s.fetchUserGuilds(c.Value) {
 				if g.ID == guildID {
 					guildName = g.Name
 					guildIcon = g.Icon
@@ -242,23 +300,33 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	// Resolve channel names for display (fallback to ID with #)
+	// Resolve channel names for display (bot REST fallback, no raw ID leak)
 	feedChannelName := ""
 	verifyChannelName := ""
 	if cfg.ChannelID != "" {
-		feedChannelName = "#" + cfg.ChannelID
-		if s.discord != nil {
+		if name := s.fetchChannelViaBot(cfg.ChannelID); name != "" {
+			feedChannelName = name
+		} else if s.discord != nil {
 			if ch, err := s.discord.Channel(cfg.ChannelID); err == nil && ch != nil && ch.Name != "" {
 				feedChannelName = "#" + ch.Name
+			} else {
+				feedChannelName = "#" + cfg.ChannelID
 			}
+		} else {
+			feedChannelName = "#" + cfg.ChannelID
 		}
 	}
 	if cfg.VerifyChannelID != "" {
-		verifyChannelName = "#" + cfg.VerifyChannelID
-		if s.discord != nil {
+		if name := s.fetchChannelViaBot(cfg.VerifyChannelID); name != "" {
+			verifyChannelName = name
+		} else if s.discord != nil {
 			if ch, err := s.discord.Channel(cfg.VerifyChannelID); err == nil && ch != nil && ch.Name != "" {
 				verifyChannelName = "#" + ch.Name
+			} else {
+				verifyChannelName = "#" + cfg.VerifyChannelID
 			}
+		} else {
+			verifyChannelName = "#" + cfg.VerifyChannelID
 		}
 	}
 	if memberCount == 0 {
