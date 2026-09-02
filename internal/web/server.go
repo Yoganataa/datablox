@@ -56,7 +56,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/dashboard", s.handleDashboard)
 	s.mux.HandleFunc("/guilds", s.handleGuilds)
 	s.mux.HandleFunc("/guild/", s.handleGuildDetail)
-	s.mux.HandleFunc("/guilds", s.handleGuilds)
+	s.mux.HandleFunc("/dashboard/guilds", s.handleGuilds)
 	s.mux.HandleFunc("/dashboard/guild/", s.handleGuildDetail)
 	s.mux.HandleFunc("/verify", s.handleVerifyPage)
 	s.mux.HandleFunc("/privacy", s.handlePrivacy)
