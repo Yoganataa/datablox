@@ -1,9 +1,12 @@
 package discord
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"math/rand"
+
+	"datablox/internal/welcome"
 	"strings"
 	"time"
 
@@ -106,11 +109,32 @@ func (b *Bot) onGuildMemberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd
 	if msg == "" {
 		msg = "Welcome {mention} to **{server}**!"
 	}
+	// Fetch guild for banner
+	guild, _ := s.Guild(m.GuildID)
+	serverName := m.GuildID
+	memberCount := 0
+	if guild != nil {
+		serverName = guild.Name
+		memberCount = guild.MemberCount
+	}
 	msg = strings.ReplaceAll(msg, "{mention}", "<@"+m.User.ID+">")
-	msg = strings.ReplaceAll(msg, "{server}", m.GuildID)
+	msg = strings.ReplaceAll(msg, "{server}", serverName)
 	msg = strings.ReplaceAll(msg, "{user}", m.User.Username)
-	_, _ = s.ChannelMessageSend(cfg.ChannelID, msg)
+	msg = strings.ReplaceAll(msg, "{count}", fmt.Sprintf("%d", memberCount))
+	// Try generated banner (option 3)
+	if banner, err := generateWelcomeBanner(m.User.Username, m.User.AvatarURL("1024"), serverName, memberCount); err == nil && banner != nil {
+		_, _ = s.ChannelMessageSendComplex(cfg.ChannelID, &discordgo.MessageSend{
+			Content: msg,
+			Files: []*discordgo.File{{Name: "welcome.jpg", ContentType: "image/jpeg", Reader: bytes.NewReader(banner)}},
+		})
+	} else {
+		_, _ = s.ChannelMessageSend(cfg.ChannelID, msg)
+	}
 	if cfg.AutoRoleID != "" {
 		_ = s.GuildMemberRoleAdd(m.GuildID, m.User.ID, cfg.AutoRoleID)
 	}
+}
+
+func generateWelcomeBanner(username, avatarURL, serverName string, memberCount int) ([]byte, error) {
+	return welcome.GenerateBanner(username, avatarURL, serverName, memberCount)
 }
