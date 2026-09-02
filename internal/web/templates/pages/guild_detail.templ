@@ -27,7 +27,12 @@ templ GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedCha
 					<div>
 						<h1 class="text-2xl font-extrabold tracking-tight">{ guildName }</h1>
 						<p class="text-white/70 text-sm">Server manager - feed, verification, and bindings</p>
-						<p class="text-white/50 text-xs mt-1">{ fmt.Sprintf("%d members", memberCount) } - Use <code class="bg-white/20 px-1.5 py-0.5 rounded text-xs">/config</code> in Discord to edit channels</p>
+						<p class="text-white/50 text-xs mt-1">
+							if memberCount >= 0 {
+								{ fmt.Sprintf("%d members", memberCount) } - 
+							}
+							Use <code class="bg-white/20 px-1.5 py-0.5 rounded text-xs">/config</code> in Discord to edit channels
+						</p>
 					</div>
 				</div>
 			</div>

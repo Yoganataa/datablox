@@ -216,7 +216,7 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 	cfg, _ := s.store.GetGuildConfig(r.Context(), guildID)
 	bindings, _ := s.store.ListBindings(r.Context(), guildID)
 	reactionRoles, _ := s.store.ListReactionRoles(r.Context(), guildID)
-	// Fetch guild details for header (name, icon, members)
+	// Fetch guild details for header (name, icon, members) — try bot cache first, fallback to user's guilds API
 	guildName := guildID
 	guildIcon := ""
 	memberCount := 0
@@ -227,20 +227,42 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 			memberCount = g.MemberCount
 		}
 	}
-	// Resolve channel names for display (fallback to ID)
+	if guildName == guildID {
+		// Fallback: use user's guilds (from OAuth) for name/icon when bot not in web HMR
+		if tok := ""; true {
+			if c, err := r.Cookie("discord_token"); err == nil {
+				tok = c.Value
+			}
+			for _, g := range s.fetchUserGuilds(tok) {
+				if g.ID == guildID {
+					guildName = g.Name
+					guildIcon = g.Icon
+					break
+				}
+			}
+		}
+	}
+	// Resolve channel names for display (fallback to ID with #)
 	feedChannelName := ""
 	verifyChannelName := ""
-	if s.discord != nil {
-		if cfg.ChannelID != "" {
-			if ch, err := s.discord.Channel(cfg.ChannelID); err == nil && ch != nil {
+	if cfg.ChannelID != "" {
+		feedChannelName = "#" + cfg.ChannelID
+		if s.discord != nil {
+			if ch, err := s.discord.Channel(cfg.ChannelID); err == nil && ch != nil && ch.Name != "" {
 				feedChannelName = "#" + ch.Name
 			}
 		}
-		if cfg.VerifyChannelID != "" {
-			if ch, err := s.discord.Channel(cfg.VerifyChannelID); err == nil && ch != nil {
+	}
+	if cfg.VerifyChannelID != "" {
+		verifyChannelName = "#" + cfg.VerifyChannelID
+		if s.discord != nil {
+			if ch, err := s.discord.Channel(cfg.VerifyChannelID); err == nil && ch != nil && ch.Name != "" {
 				verifyChannelName = "#" + ch.Name
 			}
 		}
+	}
+	if memberCount == 0 {
+		memberCount = -1 // unknown in web HMR, hide
 	}
 	_ = pages.GuildDetail(guildID, guildName, guildIcon, memberCount, feedChannelName, verifyChannelName, cfg, bindings, reactionRoles, s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
 }
