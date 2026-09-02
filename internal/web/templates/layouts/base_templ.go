@@ -113,7 +113,7 @@ func Base(title string, nav Nav) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if nav.DiscordName != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"relative group ml-2\"><button class=\"flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<details class=\"relative ml-2\"><summary class=\"flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer list-none select-none\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -180,7 +180,7 @@ func Base(title string, nav Nav) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</span> <svg class=\"w-4 h-4 text-slate-400\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div class=\"absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-2 hidden group-hover:block z-50\"><a href=\"/dashboard/guilds\" class=\"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50\">My Servers</a> <a href=\"/dashboard\" class=\"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50\">Dashboard</a><div class=\"border-t border-slate-100 my-1\"></div><a href=\"/logout\" hx-boost=\"false\" class=\"block px-4 py-2 text-sm text-red-600 hover:bg-red-50\">Logout</a></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</span> <svg class=\"w-4 h-4 text-slate-400\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19 9l-7 7-7-7\"></path></svg></summary><div class=\"absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50\"><a href=\"/dashboard\" class=\"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50\">Dashboard</a><div class=\"border-t border-slate-100 my-1\"></div><a href=\"/logout\" hx-boost=\"false\" class=\"block px-4 py-2 text-sm text-red-600 hover:bg-red-50\">Logout</a></div></details>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -57,8 +57,6 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/dashboard/guilds", s.handleGuilds)
 	s.mux.HandleFunc("/dashboard/guild/", s.handleGuildDetail)
 	s.mux.HandleFunc("/verify", s.handleVerifyPage)
-	s.mux.HandleFunc("/guide", s.handleGuide)
-	s.mux.HandleFunc("/status", s.handleStatus)
 	s.mux.HandleFunc("/privacy", s.handlePrivacy)
 	s.mux.HandleFunc("/privacy/", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/privacy", http.StatusMovedPermanently) })
 	s.mux.HandleFunc("/privacy-policy", s.handlePrivacy)
