@@ -57,6 +57,8 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/dashboard/guilds", s.handleGuilds)
 	s.mux.HandleFunc("/dashboard/guild/", s.handleGuildDetail)
 	s.mux.HandleFunc("/verify", s.handleVerifyPage)
+	s.mux.HandleFunc("/guide", s.handleGuide)
+	s.mux.HandleFunc("/status", s.handleStatus)
 	s.mux.HandleFunc("/privacy", s.handlePrivacy)
 	s.mux.HandleFunc("/privacy-policy", s.handlePrivacy)
 	s.mux.HandleFunc("/terms", s.handleTerms)
@@ -360,6 +362,18 @@ func (s *Server) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	_ = pages.Verify(s.isAdmin(r), s.discordName(r), verified, guildID).Render(r.Context(), w)
+}
+
+func (s *Server) handleGuide(w http.ResponseWriter, r *http.Request) {
+	_ = pages.Guide(s.isAdmin(r), s.discordName(r)).Render(r.Context(), w)
+}
+
+func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
+	guildCount, _ := s.store.CountGuilds(r.Context())
+	expCount, _ := s.store.Count(r.Context())
+	voteCount, _ := s.store.CountVotes(r.Context())
+	botOnline := s.discord != nil
+	_ = pages.Status(s.isAdmin(r), s.discordName(r), botOnline, guildCount, expCount, voteCount).Render(r.Context(), w)
 }
 
 func (s *Server) handlePrivacy(w http.ResponseWriter, r *http.Request) {

@@ -46,13 +46,21 @@ templ Base(title string, nav Nav) {
 						<span class="font-bold text-[17px] tracking-tight">Datablox</span>
 					</a>
 					<div class="flex items-center gap-1.5">
-						<a href="/" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Home</a>
-						<a href="/verify" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Verify</a>
-						<a href="/dashboard" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Dashboard</a>
+						<a href="/guide" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Guide</a>
+						<a href="/status" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Status</a>
 						if nav.DiscordName != "" {
-							<a href="/dashboard/guilds" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">My Servers</a>
-							<span class="hidden sm:inline text-sm font-medium text-slate-500 ml-2">Hi, { nav.DiscordName }</span>
-							<a href="/logout" hx-boost="false" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Logout</a>
+							<div class="relative group ml-2">
+								<button class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">
+									<span class="hidden sm:inline">Hi, { nav.DiscordName }</span>
+									<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+								</button>
+								<div class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-2 hidden group-hover:block z-50">
+									<a href="/dashboard/guilds" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">My Servers</a>
+									<a href="/dashboard" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Dashboard</a>
+									<div class="border-t border-slate-100 my-1"></div>
+									<a href="/logout" hx-boost="false" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</a>
+								</div>
+							</div>
 						} else {
 							<a href="/auth/discord/login" hx-boost="false" class="ml-1 inline-flex items-center gap-2 text-sm font-semibold text-white bg-[#5865F2] px-4 py-2 rounded-full shadow-md shadow-blue-500/30 hover:bg-[#4752c4] hover:shadow-lg hover:scale-[1.03] transition-all">
 								<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
@@ -72,7 +80,7 @@ templ Base(title string, nav Nav) {
 						<div class="w-6 h-6 rounded-lg bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-[9px] font-bold">DB</div>
 						<span>Datablox — verify your Roblox account via Discord</span>
 					</div>
-					<div class="flex items-center gap-4"><a href="/privacy" class="text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline">Privacy</a><a href="/terms" class="text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline">Terms</a><span class="w-px h-4 bg-slate-200"></span><a href="/verify" class="text-sm font-medium text-blue-600 hover:text-blue-700">How to verify →</a></div>
+					<div class="flex items-center gap-4"><a href="/guide" class="text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline">Guide</a><a href="/status" class="text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline">Status</a><a href="/privacy" class="text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline">Privacy</a><a href="/terms" class="text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline">Terms</a></div>
 				</div>
 			</footer>
 		</body>

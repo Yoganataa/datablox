@@ -107,25 +107,25 @@ func Base(title string, nav Nav) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<nav class=\"sticky top-0 z-40 border-b border-white/40 bg-white/70 backdrop-blur-xl\"><div class=\"max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between\"><a href=\"/\" class=\"flex items-center gap-2.5 group\"><div class=\"w-9 h-9 rounded-xl bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-sm font-bold shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform\">DB</div><span class=\"font-bold text-[17px] tracking-tight\">Datablox</span></a><div class=\"flex items-center gap-1.5\"><a href=\"/\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Home</a> <a href=\"/verify\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Verify</a> <a href=\"/dashboard\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Dashboard</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<nav class=\"sticky top-0 z-40 border-b border-white/40 bg-white/70 backdrop-blur-xl\"><div class=\"max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between\"><a href=\"/\" class=\"flex items-center gap-2.5 group\"><div class=\"w-9 h-9 rounded-xl bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-sm font-bold shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform\">DB</div><span class=\"font-bold text-[17px] tracking-tight\">Datablox</span></a><div class=\"flex items-center gap-1.5\"><a href=\"/guide\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Guide</a> <a href=\"/status\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Status</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if nav.DiscordName != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<a href=\"/dashboard/guilds\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">My Servers</a> <span class=\"hidden sm:inline text-sm font-medium text-slate-500 ml-2\">Hi, ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"relative group ml-2\"><button class=\"flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\"><span class=\"hidden sm:inline\">Hi, ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(nav.DiscordName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 54, Col: 99}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/layouts/base.templ`, Line: 54, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</span> <a href=\"/logout\" hx-boost=\"false\" class=\"text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors\">Logout</a>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</span> <svg class=\"w-4 h-4 text-slate-400\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div class=\"absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-2 hidden group-hover:block z-50\"><a href=\"/dashboard/guilds\" class=\"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50\">My Servers</a> <a href=\"/dashboard\" class=\"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50\">Dashboard</a><div class=\"border-t border-slate-100 my-1\"></div><a href=\"/logout\" hx-boost=\"false\" class=\"block px-4 py-2 text-sm text-red-600 hover:bg-red-50\">Logout</a></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -143,7 +143,7 @@ func Base(title string, nav Nav) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</main><footer class=\"relative z-10 max-w-[1200px] mx-auto px-6 pb-10 mt-14\"><div class=\"rounded-2xl bg-gradient-to-r from-[#00A2FF]/10 via-[#5865F2]/10 to-[#00A2FF]/10 border border-slate-200/60 px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3\"><div class=\"flex items-center gap-2 text-sm text-slate-500\"><div class=\"w-6 h-6 rounded-lg bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-[9px] font-bold\">DB</div><span>Datablox — verify your Roblox account via Discord</span></div><div class=\"flex items-center gap-4\"><a href=\"/privacy\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Privacy</a><a href=\"/terms\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Terms</a><span class=\"w-px h-4 bg-slate-200\"></span><a href=\"/verify\" class=\"text-sm font-medium text-blue-600 hover:text-blue-700\">How to verify →</a></div></div></footer></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</main><footer class=\"relative z-10 max-w-[1200px] mx-auto px-6 pb-10 mt-14\"><div class=\"rounded-2xl bg-gradient-to-r from-[#00A2FF]/10 via-[#5865F2]/10 to-[#00A2FF]/10 border border-slate-200/60 px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3\"><div class=\"flex items-center gap-2 text-sm text-slate-500\"><div class=\"w-6 h-6 rounded-lg bg-gradient-to-br from-[#00A2FF] to-[#0055ff] text-white grid place-items-center text-[9px] font-bold\">DB</div><span>Datablox — verify your Roblox account via Discord</span></div><div class=\"flex items-center gap-4\"><a href=\"/guide\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Guide</a><a href=\"/status\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Status</a><a href=\"/privacy\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Privacy</a><a href=\"/terms\" class=\"text-sm font-medium text-slate-500 hover:text-slate-900 underline-offset-4 hover:underline\">Terms</a></div></div></footer></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
