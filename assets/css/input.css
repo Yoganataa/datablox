@@ -159,3 +159,8 @@
     }
   }
 }
+
+@layer components {
+  .module-card { @apply border bg-card; }
+  .module-card-enabled { @apply border-primary ring-1 ring-primary/20; }
+}

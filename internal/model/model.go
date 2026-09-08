@@ -116,3 +116,32 @@ type GuildBinding struct {
 	NicknameTemplate string
 	CreatedAt        time.Time
 }
+
+type Module struct {
+	Slug        string
+	Name        string
+	Icon        string
+	Description string
+}
+
+type GuildModule struct {
+	GuildID   string
+	Slug      string
+	Enabled   bool
+	ConfigJSON string
+	UpdatedAt time.Time
+}
+
+type FeedConfig struct {
+	GuildID        string
+	ChannelID      string
+	VoteMessageID  string
+	TopMessageID   string
+	DefaultGenre   string
+}
+
+type VerifyConfig struct {
+	GuildID   string
+	ChannelID string
+	MessageID string
+}

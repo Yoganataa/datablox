@@ -73,6 +73,8 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/status/", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/status", http.StatusMovedPermanently) })
 	s.mux.HandleFunc("/api/health", s.handleHealth)
 	s.mux.HandleFunc("/api/guilds", s.handleListGuilds)
+	s.mux.HandleFunc("/api/modules", s.handleModules)
+	s.mux.HandleFunc("/api/guild-modules", s.handleGuildModules)
 	s.mux.HandleFunc("/api/bindings", s.handleBindings)
 	s.mux.HandleFunc("/api/reaction-roles", s.handleReactionRoles)
 	s.mux.HandleFunc("/api/automod", s.handleAutomod)
@@ -136,7 +138,7 @@ func (s *Server) isGuildAdmin(r *http.Request, guildID string) bool {
 	}
 	guilds := s.fetchUserGuilds(tok)
 	for _, g := range guilds {
-		if g.ID == guildID && (g.Permissions&0x20 != 0 || g.Permissions&0x8 != 0) {
+		if g.ID == guildID && (g.Permissions&0x20 != 0 || g.Permissions&0x8 != 0 || g.Owner) {
 			return true
 		}
 	}
@@ -262,13 +264,19 @@ func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {
 			adminGuilds = append(adminGuilds, g)
 		}
 	}
-	// Fetch configs for admin guilds only (batched)
+	// Fetch configs + guild_modules for admin guilds (general)
 	configs, _ := s.store.ListGuildConfigsByIDs(r.Context(), keys(adminIDs))
 	cfgMap := make(map[string]model.GuildConfig, len(configs))
 	for _, c := range configs {
 		cfgMap[c.GuildID] = c
 	}
-	_ = pages.Guilds(adminGuilds, cfgMap, s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
+	gmMap := make(map[string][]model.GuildModule, len(adminGuilds))
+	for _, g := range adminGuilds {
+		if gms, err := s.store.ListGuildModules(r.Context(), g.ID); err == nil {
+			gmMap[g.ID] = gms
+		}
+	}
+	_ = pages.Guilds(adminGuilds, cfgMap, gmMap, s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
@@ -296,6 +304,7 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 	cfg, _ := s.store.GetGuildConfig(r.Context(), guildID)
 	bindings, _ := s.store.ListBindings(r.Context(), guildID)
 	reactionRoles, _ := s.store.ListReactionRoles(r.Context(), guildID)
+	guildModules, _ := s.store.ListGuildModules(r.Context(), guildID)
 	// Fetch guild details for header (name, icon, members) — try bot cache, fallback to Bot REST, then user's guilds
 	guildName := guildID
 	guildIcon := ""
@@ -357,7 +366,7 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 	if memberCount == 0 {
 		memberCount = -1 // unknown in web HMR, hide
 	}
-	_ = pages.GuildDetail(guildID, guildName, guildIcon, memberCount, feedChannelName, verifyChannelName, cfg, bindings, reactionRoles, s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
+	_ = pages.GuildDetail(guildID, guildName, guildIcon, memberCount, feedChannelName, verifyChannelName, cfg, bindings, reactionRoles, guildModules, s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func keys(m map[string]bool) []string {
@@ -595,6 +604,51 @@ func (s *Server) handleLevels(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(levels)
 }
 
+func (s *Server) handleModules(w http.ResponseWriter, r *http.Request) {
+	mods, _ := s.store.ListModules(r.Context())
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(mods)
+}
+
+func (s *Server) handleGuildModules(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		gid := r.URL.Query().Get("guild_id")
+		if gid == "" {
+			http.Error(w, "guild_id required", http.StatusBadRequest)
+			return
+		}
+		gms, _ := s.store.ListGuildModules(r.Context(), gid)
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(gms)
+	case http.MethodPost:
+		var req struct {
+			GuildID string `json:"guild_id"`
+			Slug    string `json:"slug"`
+			Enabled bool   `json:"enabled"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if req.GuildID == "" || req.Slug == "" {
+			http.Error(w, "guild_id and slug required", http.StatusBadRequest)
+			return
+		}
+		if !s.isGuildAdmin(r, req.GuildID) {
+			http.Error(w, "not admin of this guild", http.StatusForbidden)
+			return
+		}
+		if err := s.store.SetGuildModuleEnabled(r.Context(), req.GuildID, req.Slug, req.Enabled); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
 func (s *Server) handleDiscordLogin(w http.ResponseWriter, r *http.Request) {
 	if s.cfg.DiscordClientID == "" {
 		http.Error(w, "DISCORD_CLIENT_ID not set. Set in .env (Discord Developer Portal → OAuth2)", http.StatusNotImplemented)
@@ -686,7 +740,7 @@ func (s *Server) handleDiscordCallback(w http.ResponseWriter, r *http.Request) {
 		if len(user.Avatar) > 0 && user.Avatar[0:2] == "a_" {
 			ext = "gif"
 		}
-		avatarURL = fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.%s?size=64", user.ID, user.Avatar, ext)
+		avatarURL = fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.%s", user.ID, user.Avatar, ext)
 	}
 	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: user.ID, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: user.Username, Path: "/", MaxAge: 86400 * 7, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})

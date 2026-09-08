@@ -51,5 +51,7 @@ func Commands() []*discordgo.ApplicationCommand {
 		},
 	}
 	mods := moderationCommands()
-	return append(base, mods...)
+	base = append(base, mods...)
+	base = append(base, reactionRoleCommands())
+	return base
 }

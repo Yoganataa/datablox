@@ -47,30 +47,39 @@ templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool
 			</div>
 			@card.Card() {
 				@card.Header() {
-					@card.Title() { Commands }
+					@card.Title() { Modules — enable only what you need }
 					@badge.Badge(badge.Props{Variant: "secondary"}) {
-						4 commands
+						8 modules
 					}
 				}
 				@card.Content() {
-					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-4">
-							<div class="font-mono font-bold text-slate-900">/datablox</div>
-							<div class="text-slate-500 mt-1">Browse and discover Roblox experiences with powerful filters.</div>
+					<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-3">
+							<div class="font-bold text-slate-900 text-xs">AutoMod</div><div class="text-slate-500 text-xs mt-1">Spam &amp; invite filters</div>
 						</div>
-						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-4">
-							<div class="font-mono font-bold text-slate-900">/add &lt;url&gt;</div>
-							<div class="text-slate-500 mt-1">Add any Roblox experience to your server's catalog.</div>
+						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-3">
+							<div class="font-bold text-slate-900 text-xs">Bindings</div><div class="text-slate-500 text-xs mt-1">Group ranks → roles</div>
 						</div>
-						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-4">
-							<div class="font-mono font-bold text-slate-900">/search &lt;query&gt;</div>
-							<div class="text-slate-500 mt-1">Search the catalog instantly.</div>
+						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-3">
+							<div class="font-bold text-slate-900 text-xs">Feed</div><div class="text-slate-500 text-xs mt-1">Catalog, voting &amp; top</div>
 						</div>
-						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-4">
-							<div class="font-mono font-bold text-slate-900">/config</div>
-							<div class="text-slate-500 mt-1">Set up your feed and verification channels for each server.</div>
+						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-3">
+							<div class="font-bold text-slate-900 text-xs">Leveling</div><div class="text-slate-500 text-xs mt-1">XP, levels, leaderboard</div>
+						</div>
+						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-3">
+							<div class="font-bold text-slate-900 text-xs">Moderation</div><div class="text-slate-500 text-xs mt-1">Warn, mute, ban, kick, purge</div>
+						</div>
+						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-3">
+							<div class="font-bold text-slate-900 text-xs">Reaction Roles</div><div class="text-slate-500 text-xs mt-1">Emoji → role (4 modes)</div>
+						</div>
+						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-3">
+							<div class="font-bold text-slate-900 text-xs">Verify</div><div class="text-slate-500 text-xs mt-1">Roblox OAuth linking</div>
+						</div>
+						<div class="rounded-xl bg-slate-50 border border-slate-200/60 p-3">
+							<div class="font-bold text-slate-900 text-xs">Welcome</div><div class="text-slate-500 text-xs mt-1">Greeting &amp; auto-role</div>
 						</div>
 					</div>
+					<p class="text-xs text-slate-400 mt-3">All modules equal — toggle via dashboard (soon) or <code class="bg-slate-100 px-1 py-0.5 rounded">/config</code> in Discord. Enabled first (A-Z), disabled after (A-Z).</p>
 				}
 			}
 			@card.Card() {
@@ -79,7 +88,7 @@ templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool
 				}
 				@card.Content() {
 					<p class="text-sm text-slate-600 leading-relaxed">
-						Each server has its own feed channel for voting and announcements, and a verification channel with a Verify button. Configure with <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">/config</code> in Discord.
+						Each server enables only the modules it needs — moderation, automod, leveling, welcome, reaction roles, bindings, verification and feeds. Configure with <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">/config</code> in Discord.
 						Server data stays private. Only admins with Manage Server can configure their community.
 					</p>
 					if isAdmin {

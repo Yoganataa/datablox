@@ -20,13 +20,13 @@ func (b *Bot) handlePanel(ctx context.Context, i *discordgo.InteractionCreate, _
 	}
 	embed := &discordgo.MessageEmbed{
 		Title:       "📦 Datablox — Dashboard",
-		Description: fmt.Sprintf("**%d** experiences saved\nChoose an action below — browse without many slash commands.", total),
+		Description: fmt.Sprintf("**%d** experiences saved\n8 modules — enable only what you need. Browse or manage your server.", total),
 		Color:       0x5865F2,
 		Fields: []*discordgo.MessageEmbedField{
 			{Name: "Browse", Value: "🔍 Search (modal) • 🎲 Random • 🔥 Trending • 📚 List by genre", Inline: false},
-			{Name: "Feed (1 Channel)", Value: "Vote #1 (25/page) + Top 10 #2 + Feed (chronological) — set via `/config`", Inline: false},
+			{Name: "Modules (8 — equal)", Value: "Moderation • AutoMod • Leveling • Welcome • Reaction Roles • Bindings • Verify • Feed — set via `/config`", Inline: false},
 		},
-		Footer: &discordgo.MessageEmbedFooter{Text: "Datablox • Central panel — ephemeral, no channel spam"},
+		Footer: &discordgo.MessageEmbedFooter{Text: "Datablox • All modules equal — ephemeral, no channel spam"},
 	}
 	components := []discordgo.MessageComponent{
 		discordgo.ActionsRow{Components: []discordgo.MessageComponent{

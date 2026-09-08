@@ -123,6 +123,17 @@ func (s *Store) migrate() error {
 			}
 		}
 	}
+	if sqlB, err := migrationsFS.ReadFile("migrations/0009_module_registry.sql"); err == nil {
+		for _, stmt := range strings.Split(string(sqlB), ";") {
+			stmt = strings.TrimSpace(stmt)
+			if stmt == "" {
+				continue
+			}
+			if _, err := s.db.Exec(stmt); err != nil && !strings.Contains(err.Error(), "already exists") && !strings.Contains(err.Error(), "duplicate column name") && !strings.Contains(err.Error(), "UNIQUE constraint failed") {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
@@ -798,6 +809,70 @@ func (s *Store) SetWelcomeConfig(ctx context.Context, cfg model.WelcomeConfig) e
 		enabled = 1
 	}
 	_, err := s.db.ExecContext(ctx, "INSERT INTO welcome_config (guild_id, channel_id, message, auto_role_id, enabled, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(guild_id) DO UPDATE SET channel_id=excluded.channel_id, message=excluded.message, auto_role_id=excluded.auto_role_id, enabled=excluded.enabled, updated_at=CURRENT_TIMESTAMP", cfg.GuildID, cfg.ChannelID, cfg.Message, cfg.AutoRoleID, enabled)
+	return err
+}
+
+func (s *Store) ListModules(ctx context.Context) ([]model.Module, error) {
+	rows, err := s.db.QueryContext(ctx, "SELECT slug, name, icon, description FROM modules ORDER BY name")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []model.Module
+	for rows.Next() {
+		var m model.Module
+		if err := rows.Scan(&m.Slug, &m.Name, &m.Icon, &m.Description); err != nil {
+			return nil, err
+		}
+		out = append(out, m)
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) ListGuildModules(ctx context.Context, guildID string) ([]model.GuildModule, error) {
+	rows, err := s.db.QueryContext(ctx, "SELECT guild_id, slug, enabled, config_json, updated_at FROM guild_modules WHERE guild_id = ? ORDER BY slug", guildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []model.GuildModule
+	for rows.Next() {
+		var gm model.GuildModule
+		var enabled int
+		if err := rows.Scan(&gm.GuildID, &gm.Slug, &enabled, &gm.ConfigJSON, &gm.UpdatedAt); err != nil {
+			return nil, err
+		}
+		gm.Enabled = enabled != 0
+		out = append(out, gm)
+	}
+	if len(out) == 0 {
+		// seed defaults if missing (legacy guild)
+		mods, _ := s.ListModules(ctx)
+		for _, m := range mods {
+			_, _ = s.db.ExecContext(ctx, "INSERT OR IGNORE INTO guild_modules (guild_id, slug, enabled) VALUES (?, ?, 0)", guildID, m.Slug)
+		}
+		return s.ListGuildModules(ctx, guildID)
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) GetGuildModule(ctx context.Context, guildID, slug string) (model.GuildModule, error) {
+	var gm model.GuildModule
+	var enabled int
+	err := s.db.QueryRowContext(ctx, "SELECT guild_id, slug, enabled, config_json, updated_at FROM guild_modules WHERE guild_id = ? AND slug = ?", guildID, slug).Scan(&gm.GuildID, &gm.Slug, &enabled, &gm.ConfigJSON, &gm.UpdatedAt)
+	if err != nil {
+		return model.GuildModule{GuildID: guildID, Slug: slug}, err
+	}
+	gm.Enabled = enabled != 0
+	return gm, nil
+}
+
+func (s *Store) SetGuildModuleEnabled(ctx context.Context, guildID, slug string, enabled bool) error {
+	v := 0
+	if enabled {
+		v = 1
+	}
+	_, err := s.db.ExecContext(ctx, "INSERT INTO guild_modules (guild_id, slug, enabled, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(guild_id, slug) DO UPDATE SET enabled=excluded.enabled, updated_at=CURRENT_TIMESTAMP", guildID, slug, v)
 	return err
 }
 
