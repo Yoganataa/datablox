@@ -24,11 +24,18 @@ type Config struct {
 	RobloxClientID  string
 	RobloxSecret    string
 	AdminDiscordIDs map[string]bool
+	OwnerDiscordIDs map[string]bool
 }
 
 func Load() (*Config, error) {
 	loadDotEnv()
 
+	adminSet := parseIDSet(os.Getenv("ADMIN_DISCORD_IDS"))
+	mergeSet(adminSet, parseIDSet(os.Getenv("ADMIN_ID")))
+	mergeSet(adminSet, parseIDSet(os.Getenv("ADMIN_IDS")))
+	ownerSet := parseIDSet(os.Getenv("OWNER_ID"))
+	mergeSet(ownerSet, parseIDSet(os.Getenv("OWNER_IDS")))
+	mergeSet(adminSet, ownerSet) // owners are also admins for isAdmin
 	cfg := &Config{
 		DiscordToken:    os.Getenv("DISCORD_TOKEN"),
 		GuildID:         os.Getenv("GUILD_ID"),
@@ -42,7 +49,8 @@ func Load() (*Config, error) {
 		DiscordSecret:   os.Getenv("DISCORD_CLIENT_SECRET"),
 		RobloxClientID:  os.Getenv("ROBLOX_CLIENT_ID"),
 		RobloxSecret:    os.Getenv("ROBLOX_CLIENT_SECRET"),
-		AdminDiscordIDs: parseIDSet(os.Getenv("ADMIN_DISCORD_IDS")),
+		AdminDiscordIDs: adminSet,
+		OwnerDiscordIDs: ownerSet,
 	}
 
 	// Normalize WebURL: trim single trailing slash and validate
@@ -126,4 +134,10 @@ func parseIDSet(s string) map[string]bool {
 		}
 	}
 	return set
+}
+
+func mergeSet(dst, src map[string]bool) {
+	for k := range src {
+		dst[k] = true
+	}
 }

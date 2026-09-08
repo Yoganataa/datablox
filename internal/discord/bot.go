@@ -25,7 +25,7 @@ func New(cfg *config.Config, log *slog.Logger, svc *service.ExperienceService) (
 	if err != nil {
 		return nil, err
 	}
-	sess.Identify.Intents = discordgo.IntentsGuilds | discordgo.IntentsGuildMessageReactions
+	sess.Identify.Intents = discordgo.IntentsGuilds | discordgo.IntentsGuildMembers | discordgo.IntentsGuildMessages | discordgo.IntentsGuildMessageReactions | discordgo.IntentsMessageContent
 	return &Bot{
 		cfg:    cfg,
 		log:    log,
@@ -133,6 +133,8 @@ func (b *Bot) onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate
 			b.handleLevel(ctx, i, data)
 		case "leaderboard":
 			b.handleLeaderboard(ctx, i, data)
+		case "reactionrole":
+			b.handleReactionRole(ctx, i, data)
 		default:
 			respondText(s, i, "Unknown command.")
 		}

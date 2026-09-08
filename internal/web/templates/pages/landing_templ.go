@@ -45,7 +45,7 @@ func Landing(isAdmin bool, discordName, discordAvatar, clientID string, guildCou
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mx-auto max-w-4xl\"><!-- Hero --><div class=\"relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0055ff] via-[#0088ff] to-[#00d4ff] text-white shadow-2xl shadow-blue-500/30\"><div class=\"absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/15 blur-2xl\"></div><div class=\"absolute -left-10 -bottom-20 w-56 h-56 rounded-full bg-[#00ffd5]/20 blur-2xl\"></div><div class=\"relative px-8 sm:px-12 py-14 sm:py-16\"><div class=\"inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur px-3 py-1 text-xs font-semibold\"><span class=\"w-2 h-2 rounded-full bg-[#00ffd5] animate-pulse\"></span> Fast &amp; secure verification</div><h1 class=\"mt-5 text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.1]\">Manage your<br>Discord server</h1><p class=\"mt-4 text-blue-50/90 text-base sm:text-lg max-w-xl\">Invite Datablox to your server — catalog Roblox experiences, voting, and secure Roblox verification. One bot, many servers.</p><div class=\"mt-8 flex flex-col sm:flex-row gap-3\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mx-auto max-w-4xl\"><!-- Hero --><div class=\"relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0055ff] via-[#0088ff] to-[#00d4ff] text-white shadow-2xl shadow-blue-500/30\"><div class=\"absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/15 blur-2xl\"></div><div class=\"absolute -left-10 -bottom-20 w-56 h-56 rounded-full bg-[#00ffd5]/20 blur-2xl\"></div><div class=\"relative px-8 sm:px-12 py-14 sm:py-16\"><div class=\"inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur px-3 py-1 text-xs font-semibold\"><span class=\"w-2 h-2 rounded-full bg-[#00ffd5] animate-pulse\"></span> 8 modules — enable what you need</div><h1 class=\"mt-5 text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.1]\">Manage your<br>Discord, your way</h1><p class=\"mt-4 text-blue-50/90 text-base sm:text-lg max-w-xl\">One platform for moderation, automation, leveling, welcome, reaction roles, role bindings, verification and feeds — enable only what you need.</p><div class=\"mt-8 flex flex-col sm:flex-row gap-3\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -112,7 +112,7 @@ func Landing(isAdmin bool, discordName, discordAvatar, clientID string, guildCou
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div><div class=\"text-xs font-semibold text-slate-500 uppercase tracking-wider\">Votes</div></div></div><p class=\"text-center text-xs text-slate-400 mt-3\">Trusted by communities of all sizes</p><!-- How it works --><div class=\"mt-14\"><div class=\"text-center\"><h2 class=\"text-2xl sm:text-3xl font-extrabold tracking-tight\">How it works</h2><p class=\"text-slate-500 mt-2 text-sm sm:text-base\">Three easy steps, done in seconds.</p></div><div class=\"mt-8 grid grid-cols-1 sm:grid-cols-3 gap-5\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div><div class=\"text-xs font-semibold text-slate-500 uppercase tracking-wider\">Votes</div></div></div><p class=\"text-center text-xs text-slate-400 mt-3\">Trusted by communities of all sizes</p><!-- How it works --><div class=\"mt-14\"><div class=\"text-center\"><h2 class=\"text-2xl sm:text-3xl font-extrabold tracking-tight\">How it works</h2><p class=\"text-slate-500 mt-2 text-sm sm:text-base\">Three steps — enable only the modules you need.</p></div><div class=\"mt-8 grid grid-cols-1 sm:grid-cols-3 gap-5\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -120,38 +120,74 @@ func Landing(isAdmin bool, discordName, discordAvatar, clientID string, guildCou
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = stepCard("2", "bg-[#00A2FF]", "Configure", "Run /config in Discord to set feed and verify channels and group binds.").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = stepCard("2", "bg-[#00A2FF]", "Enable modules", "Open dashboard or run /config — toggle moderation, leveling, welcome, reaction roles, bindings, verification and feeds.").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = stepCard("3", "bg-[#00c97a]", "Members verify", "Members run /verify in Discord, link Roblox, and get roles automatically.").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = stepCard("3", "bg-[#00c97a]", "Members use features", "Members verify, react, level up and get roles automatically.").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div></div><!-- Perks --><div class=\"mt-14\"><div class=\"text-center\"><h2 class=\"text-2xl sm:text-3xl font-extrabold tracking-tight\">Why Datablox?</h2><p class=\"text-slate-500 mt-2 text-sm sm:text-base\">A seamless verification experience without hassle.</p></div><div class=\"mt-8 grid grid-cols-1 sm:grid-cols-3 gap-5\"><div class=\"rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all\"><div class=\"w-10 h-10 rounded-xl bg-[#00A2FF]/10 text-[#00A2FF] grid place-items-center mb-4\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z\"></path></svg></div><div class=\"font-bold text-[15px]\">Secure</div><p class=\"text-sm text-slate-500 mt-1.5\">Legit OAuth verification — your data is protected.</p></div><div class=\"rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all\"><div class=\"w-10 h-10 rounded-xl bg-[#5865F2]/10 text-[#5865F2] grid place-items-center mb-4\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13 10V3L4 14h7v7l9-11h-7z\"></path></svg></div><div class=\"font-bold text-[15px]\">Instant</div><p class=\"text-sm text-slate-500 mt-1.5\">Roles are granted instantly after verification.</p></div><div class=\"rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all\"><div class=\"w-10 h-10 rounded-xl bg-[#00c97a]/10 text-[#00c97a] grid place-items-center mb-4\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z\"></path></svg></div><div class=\"font-bold text-[15px]\">Trusted</div><p class=\"text-sm text-slate-500 mt-1.5\">Seamlessly integrated with Discord &amp; Roblox.</p></div></div></div><!-- Final CTA --><div class=\"mt-14 rounded-3xl border border-slate-200/80 bg-white/70 backdrop-blur p-8 sm:p-10 text-center shadow-sm\"><h3 class=\"text-xl sm:text-2xl font-extrabold tracking-tight\">Ready to manage your server?</h3><p class=\"text-slate-500 mt-2 text-sm sm:text-base max-w-md mx-auto\">Invite Datablox, configure channels with /config, and let members verify via /verify in Discord.</p><div class=\"mt-6 flex flex-col sm:flex-row gap-3 justify-center\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div></div><!-- Modules — equal grid --><div class=\"mt-14\"><div class=\"text-center\"><h2 class=\"text-2xl sm:text-3xl font-extrabold tracking-tight\">Everything you need</h2><p class=\"text-slate-500 mt-2 text-sm sm:text-base\">Eight modules, same design — enable what you need, disable the rest.</p></div><div class=\"mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = moduleCard("AutoMod", "Spam, invite and mention filters with exemptions.", "shield-alert").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = moduleCard("Bindings", "Roblox group ranks to Discord roles and nicknames.", "link").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = moduleCard("Feed", "Roblox catalog browsing, voting and top lists.", "rss").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = moduleCard("Leveling", "XP, levels and leaderboards from chat activity.", "trophy").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = moduleCard("Moderation", "Warn, mute, ban, kick and purge with history.", "gavel").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = moduleCard("Reaction Roles", "Emoji role assignment — normal, unique, verify and reverse.", "smile-plus").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = moduleCard("Verify", "Secure Roblox OAuth linking — one Discord to one Roblox.", "badge-check").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = moduleCard("Welcome", "Greeting messages and auto-role with banner image.", "hand").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div></div><!-- Final CTA --><div class=\"mt-14 rounded-3xl border border-slate-200/80 bg-white/70 backdrop-blur p-8 sm:p-10 text-center shadow-sm\"><h3 class=\"text-xl sm:text-2xl font-extrabold tracking-tight\">Ready to manage your server?</h3><p class=\"text-slate-500 mt-2 text-sm sm:text-base max-w-md mx-auto\">Invite Datablox, configure channels with /config, and let members verify via /verify in Discord.</p><div class=\"mt-6 flex flex-col sm:flex-row gap-3 justify-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if clientID != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 templ.SafeURL
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("https://discord.com/oauth2/authorize?client_id=" + clientID + "&permissions=268435456&scope=bot%20applications.commands"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 110, Col: 152}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 97, Col: 152}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" target=\"_blank\" rel=\"noreferrer\" class=\"inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#5865F2] to-[#7c4dff] text-white px-7 py-3.5 text-sm font-bold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all\">Invite Bot <svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13 7l5 5m0 0l-5 5m5-5H6\"></path></svg></a> ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" target=\"_blank\" rel=\"noreferrer\" class=\"inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#5865F2] to-[#7c4dff] text-white px-7 py-3.5 text-sm font-bold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all\">Invite Bot <svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13 7l5 5m0 0l-5 5m5-5H6\"></path></svg></a> ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<a href=\"/dashboard\" class=\"inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-7 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors\">View Dashboard</a></div><p class=\"mt-4 text-xs text-slate-400\">Members verify via <code class=\"bg-slate-100 px-1 py-0.5 rounded\">/verify</code> inside Discord — not from this page.</p></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<a href=\"/dashboard\" class=\"inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-7 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors\">View Dashboard</a></div><p class=\"mt-4 text-xs text-slate-400\">Members verify via <code class=\"bg-slate-100 px-1 py-0.5 rounded\">/verify</code> inside Discord — not from this page.</p></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -186,7 +222,7 @@ func stepCard(num string, accentBg string, title string, desc string) templ.Comp
 			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all\"><div class=\"flex items-center gap-3\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all\"><div class=\"flex items-center gap-3\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -195,7 +231,7 @@ func stepCard(num string, accentBg string, title string, desc string) templ.Comp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -208,46 +244,114 @@ func stepCard(num string, accentBg string, title string, desc string) templ.Comp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(num)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 128, Col: 117}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 115, Col: 117}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div><div class=\"font-bold text-[15px]\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div><div class=\"font-bold text-[15px]\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 129, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 116, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div></div><p class=\"text-sm text-slate-500 mt-3\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div></div><p class=\"text-sm text-slate-500 mt-3\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(desc)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 131, Col: 47}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 118, Col: 47}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</p></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</p></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func moduleCard(title string, desc string, icon string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var14 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var14 == nil {
+			templ_7745c5c3_Var14 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"module-card rounded-2xl bg-white border border-slate-200/80 shadow-sm p-5 hover:shadow-md hover:border-slate-300 transition-all\"><div class=\"w-9 h-9 rounded-lg bg-slate-900 text-white grid place-items-center text-xs font-bold\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var15 string
+		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(icon[:1])
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 124, Col: 110}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</div><div class=\"font-bold text-[14px] mt-3\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var16 string
+		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(title)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 125, Col: 49}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</div><p class=\"text-xs text-slate-500 mt-1.5 leading-relaxed\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var17 string
+		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(desc)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/landing.templ`, Line: 126, Col: 65}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</p></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

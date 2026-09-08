@@ -1,79 +1,127 @@
-# Datablox — Roblox Discord Bot (Go + SQLite)
+# Datablox — Roblox Discord Bot + Web Panel (Go + SQLite + templ)
 
-Single-binary Discord bot untuk katalog Roblox. `go run` untuk dev, tanpa Docker, rapi sampai 1000 experience.
+Single-binary Discord bot + web dashboard untuk komunitas Roblox. Katalog Roblox, voting, verifikasi Roblox OAuth, dan 8 modul server yang equal (enable what you need) — `templ` + `Tailwind` + `HTMX`, `modernc.org/sqlite` WAL, tanpa Docker wajib.
 
 ## Stack
-Go 1.27 · discordgo v0.29 · modernc.org/sqlite (pure Go) · FTS5 · cron/v3
 
-## Setup
+Go 1.27 · discordgo v0.29 · modernc.org/sqlite v1.57 (pure Go, WAL) · a-h/templ v0.3.1020 · tailwindcss v4.1 + templui v1.13 · go-htmx v1.13 · FTS5 · cron/v3 · fogleman/gg + imaging (welcome banner 1000×400 JPEG) · cloudflared tunnel `datablox.devest.live → localhost:8080`
+
+## Quick Setup
 
 ```bash
-cp .env.example .env   # isi DISCORD_TOKEN, GUILD_ID opsional (guild = sync instan)
-go run ./cmd/bot       # dev
-go build -o bin/bot ./cmd/bot && ./bin/bot  # prod
+cp .env.example .env   # isi DISCORD_TOKEN + OWNER_IDS/ADMIN_IDS + OAuth
+go run ./cmd/bot       # bot saja (tanpa web HMR)
+go run ./cmd/web       # web HMR saja (templ --proxy :8080)
+
+# dev all-in (HMR web + bot stabil + cloudflared) — Taskfile
+task dev
+
+# prod
+templ generate && ./tailwindcss.exe -i assets/css/input.css -o assets/css/output.css --minify
+go build -o bin/bot.exe ./cmd/bot && go build -o bin/web.exe ./cmd/web
 ```
 
-**Env** `internal/config/config.go:1`:
+Invite: `bot` + `applications.commands`, permissions `268435456` (least-privilege, `Send Messages` + `Embed Links` minimal untuk feed). `GUILD_ID` kosong = global (1 jam propagate), isi = guild sync instan.
+
+## Env `internal/config/config.go:1`
+
 ```
-DISCORD_TOKEN=...
-GUILD_ID=123...        # kosong = global (1 jam propagate)
-DATABASE_PATH=./data/bot.db  # :memory: untuk test
+DISCORD_TOKEN=...                 # wajib
+GUILD_ID=                         # kosong = global
+DATABASE_PATH=./data/bot.db       # :memory: untuk test
 ROBLOX_TIMEOUT=10s
 REFRESH_INTERVAL=30m
 LOG_LEVEL=info
+WEB_PORT=8080
+WEB_URL=http://localhost:8080     # / https://datablox.devest.live (prod via cloudflared)
+OWNER_ID= / OWNER_IDS=123,456     # super admin (bypass all, BotOwner)
+ADMIN_ID= / ADMIN_IDS=123,456     # bot admin (global, BotAdmin, ADMIN_DISCORD_IDS legacy tetap support)
+ADMIN_DISCORD_IDS=                # legacy, merge ke ADMIN_IDS
+DISCORD_CLIENT_ID= / DISCORD_CLIENT_SECRET=  # Discord OAuth (hidden /auth/discord/login)
+ROBLOX_CLIENT_ID= / ROBLOX_CLIENT_SECRET=    # Roblox OAuth https://create.roblox.com/dashboard/credentials
 ```
 
-Invite: `bot` + `applications.commands`, permissions `Send Messages (2048) + Embed Links (16384) = 18432`.
+`OWNER_IDS > ADMIN_IDS` jika ada di dua-duanya. `isGuildAdmin` = `isOwnerBot || isAdminBot || GuildOwner || MANAGE_GUILD (0x20) || ADMINISTRATOR (0x8)`.
 
-## Commands (8 + autocomplete max)
+## Commands (12 + autocomplete)
 
-| Command | Params | Catatan UX |
+| Command | Params | Catatan |
 |---|---|---|
-| `/add url genre` | `url` wajib, `genre` choice (auto-infer jika kosong) | Dedup by `universe_id`, thumbnail `512→150`, `visits/votes/created/updated` langsung, trigger feed |
-| `/search query genre` | `query` **autocomplete** | FTS5 `name/description` `bm25`, fallback LIKE |
-| `/games genre` | `genre` choice | `playing DESC` |
-| `/game experience` | **autocomplete** | Detail kaya 6 field + thumbnail |
-| `/random genre` | `genre` choice | `(playing+1)*RANDOM()` weighted |
-| `/trending` | — | Top `playing` |
-| `/refresh experience` | **autocomplete**, kosong = semua | `RefreshOne` force fetch (bukan dedup), `RefreshAll` batch 100 |
-| `/config action value` | `action: channel/genre/show/regen` | `channel` = 1 channel feed (vote #1 + top10 #2 + feed #3+), `regen` rebuild |
+| `/datablox` | — | Dashboard central (ephemeral, 4 buttons + genre select) |
+| `/add url genre` | `url` wajib, `genre` choice | Dedup `universe_id`, batch `GetGameDetail/GetVotes`, thumbnail `512` |
+| `/search query genre` | `query` **autocomplete** | FTS5 `bm25` + fallback LIKE |
+| `/config` | `MANAGE_GUILD` | Panel SelectMenu feed/verify channel + genre + regen |
+| `/warn user reason` | `user`, `reason` | Infraction `warn` |
+| `/mute user minutes reason` | `user`, `minutes` default 10 | Timeout `GuildMemberTimeout` + infraction `mute` |
+| `/ban user reason` | `user` | `GuildBanCreate` + infraction `ban` |
+| `/kick user reason` | `user` | `GuildMemberDelete` |
+| `/purge amount` | `1-100` | Bulk delete `<14 hari` |
+| `/level user` | `user` optional | XP `100*2^level` |
+| `/leaderboard` | — | Top 10 `xp DESC` |
+| `/reactionrole add/list/remove` | `add: channel message_id emoji role mode(normal/unique/verify/reverse)`, `list`, `remove id` | Parity web `POST /api/reaction-roles`, cap 20/msg, `NormalizeEmoji` specter-style, `reverse` toggle |
 
-Semua field `experience` (`search`, `game`, `refresh`) autocomplete via `SearchNames` FTS limit 10 (<10ms).
+Semua `experience` field autocomplete via `SearchNames` FTS limit 10.
 
-## Feed 1 Channel — Rapi Sampai 1000
+## 8 Modules — Equal (enable what you need)
+
+Landing `Everything you need` + `guild_detail` + `dashboard` + `guilds` semua grid `lg:grid-cols-4` order alphabet `AutoMod, Bindings, Feed, Leveling, Moderation, Reaction Roles, Verify, Welcome` — sorting `enabled-first A-Z` via `internal/core/modules.go:17` `SortedModules(guildModules)` (enabled di atas A-Z, disabled di bawah A-Z). `GET /api/modules` 8 rows, `GET/POST /api/guild-modules` toggle per guild (`isGuildAdmin`).
+
+| Modul | Deskripsi | Store |
+|---|---|---|
+| **Moderation** | warn/mute/ban/kick/purge + `infractions` | `infractions` |
+| **AutoMod** | `anti_spam/anti_invite/mass_mention/ghost_ping` + `exempt` (next: per-rule) | `automod_config` |
+| **Leveling** | XP `15-25/60s` `100*2^level`, leaderboard 10, role rewards (next) | `levels` |
+| **Welcome** | channel/message/auto_role + banner `gg` JPEG | `welcome_config` |
+| **Reaction Roles** | `normal/unique/verify/reverse` (drop compat), 20/msg | `reaction_roles` |
+| **Bindings** | `group_id + rankMin/Max / role_id → discord_role_id` + nickname template | `guild_bindings` |
+| **Verify** | Roblox PKCE `openid profile` → `verified_users` 1 Discord:1 Roblox, `GuildMemberRoleAdd` per bindings | `verified_users`, `verify_config` |
+| **Feed** | 1 channel `Vote 25/page (SelectMenu + Prev/Next/Search modal) + Top 10 + Feed` kronologis | `guild_config` + `poll_votes` + `feed_config` |
+
+Guild card `My Servers` sekarang `0/8 modules` + chips 3 teratas `+n` (bukan `No feed/No verify`), `guild_detail` toggle `ON/OFF` `fetch POST /api/guild-modules credentials:same-origin` → reload.
+
+## Web Panel `internal/web/server.go:57`
 
 ```
-/config action:channel value:#datablox-feed
+GET  /, /dashboard → 302 /guilds (auth), /guilds, /guild/<id>, /verify?guild_id, /guide, /status, /privacy, /terms
+GET  /api/health → {"status":"ok"}
+GET  /api/modules, GET/POST /api/guild-modules (toggle), /api/bindings, /api/reaction-roles (reverse), /api/automod, /api/welcome, /api/levels?guild_id, /api/guilds (gated)
+GET  /auth/discord/login|callback (state 5m + cookie), /auth/roblox/login|callback (PKCE verifier 5m), /logout
+/assets/ (output.css), templui scripts
 ```
-- Pesan #1 **Vote** — paginated `25/halaman` (40 halaman untuk 1000), `SelectMenu 25 opsi` + `Prev/Next/Search` buttons, multi-vote boleh
-- Pesan #2 **Top 10** — `Trending`, edit on `/add`/`/refresh`
-- Pesan #3+ **Feed** — tiap `/add` post 1 embed baru (kronologis), vote/top edit in-place (1 edit, bukan 1000 post burst)
 
-Batasan Discord: `20 reactions/msg` tidak dipakai — ganti SelectMenu 25, `10 embeds/msg`, `5 msg/5s per channel`. Paginasi edit 1 message, bukan flood 1000.
+`layouts/base.templ:9` `Nav{IsAdmin,DiscordName,DiscordAvatar}` avatar `cdn.discordapp.com/avatars/{id}/{hash}.png`, `layouts` `Guide Status` + `Dashboard` dropdown click `details` (bukan hover).
 
-**Vote flow:** pilih di dropdown → `poll_votes(message_id,user_id,universe_id)` multi-vote → ephemeral `Voted untuk ... total N vote` → `Prev/Next` → `ChannelMessageEditComplex` ganti page → `Search` → modal → ephemeral hasil.
+## Detail Experience
 
-## Detail Experience Kaya
-
-Embed `internal/discord/embed.go:1`: `Genre | Playing | Visits (👁️)` + `Rating 👍 % (up/down) | Max Players | Creator` + thumbnail `512x512` + footer `Dibuat 2020-01-02 • Update 3d lalu • Refresh 5m lalu`.
-
-Tambahan DB `0002_enrich`, `0003_feed`: `visits`, `up_votes`, `down_votes`, `roblox_created/updated`, `vote_message_id`, `top_message_id`, `poll_votes`, index `idx_experiences_genre_playing`.
+Embed `internal/discord/embed.go:1`: `Genre | Playing | Visits` + `Rating 👍 % | Max Players | Creator` + thumbnail `512x512` + footer `Dibuat Update Refresh`.
 
 ## Struktur
 
 ```
-cmd/bot/main.go
-internal/config, model, store (interface portable ke Postgres), store/sqlite (+FTS5, migrations 0001-0003)
-internal/roblox/client.go (ExtractPlaceID, ResolveUniverseID, GetGameDetail, GetVotes batch, GetThumbnailURL)
-internal/service (genre infer word-boundary, experience Add/RefreshOne/RefreshAll)
-internal/discord (bot, commands, handlers, embed, feed paginated 25)
-internal/scheduler
+cmd/bot, cmd/web (HMR --proxy)
+internal/config (OWNER_IDS/ADMIN_IDS merge), model (Module/GuildModule/FeedConfig/VerifyConfig), store (interface), store/sqlite (FTS5, WAL, migrations 0001-0009 module_registry)
+internal/roblox (ExtractPlaceID, ResolveUniverseID, GetGameDetail, GetVotes batch, GetThumbnailURL)
+internal/service (genre infer, Add/RefreshOne/RefreshAll)
+internal/discord (bot, commands, moderation, leveling, welcome/banner, reaction_roles reverse, panel)
+internal/core (router scaffold, modules.go SortedModules)
+internal/web (server, templates/pages landing/dashboard/guilds/guild_detail/verify/guide/status/privacy/terms, layouts/base)
+assets/css (input.css → output.css via tailwindcss.exe)
+Taskfile.yml (templ internal, tailwind internal, cloudflared internal, web, bot, dev all-in)
 ```
+
+Roblox API: `apis.roblox.com/universes/v1/places/{id}/universe`, `games.roblox.com/v1/games?universeIds=...`, `thumbnails.roblox.com/v1/games/icons?size=512x512`.
 
 ## Test & Vet
 
 ```bash
-go vet ./...; go test ./...; go build -o bin/bot ./cmd/bot
+templ generate
+go vet ./...
+go test ./internal/store/sqlite -count 1
+go build -o bin/web.exe ./cmd/web && go build -o bin/bot.exe ./cmd/bot
 ```
 
-Roblox API: `apis.roblox.com/universes/v1/places/{id}/universe`, `games.roblox.com/v1/games?universeIds=...`, `.../v1/games/votes?universeIds=...`, `thumbnails.roblox.com/v1/games/icons?size=512x512`.
+Health: `GET /api/health → 200`, `GET /api/modules → 200 8 rows alphabet`.
+
+## Migrasi `0009_module_registry.sql:1`
+
+`modules` seed 8 + `guild_modules (guild_id, slug, enabled, config_json)` + `feed_config` + `verify_config` copy dari `guild_config` (backward compat, `guild_config` kolom lama tetap untuk dual-read).

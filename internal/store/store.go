@@ -54,5 +54,9 @@ type Store interface {
 	Leaderboard(ctx context.Context, guildID string, limit int) ([]model.Level, error)
 	GetWelcomeConfig(ctx context.Context, guildID string) (model.WelcomeConfig, error)
 	SetWelcomeConfig(ctx context.Context, cfg model.WelcomeConfig) error
+	ListModules(ctx context.Context) ([]model.Module, error)
+	ListGuildModules(ctx context.Context, guildID string) ([]model.GuildModule, error)
+	GetGuildModule(ctx context.Context, guildID, slug string) (model.GuildModule, error)
+	SetGuildModuleEnabled(ctx context.Context, guildID, slug string, enabled bool) error
 	Close() error
 }

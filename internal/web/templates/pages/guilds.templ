@@ -1,13 +1,16 @@
 package pages
 
 import (
+	"fmt"
+
 	"datablox/components/badge"
 	"datablox/components/card"
+	"datablox/internal/core"
 	"datablox/internal/model"
 	"datablox/internal/web/templates/layouts"
 )
 
-templ Guilds(userGuilds []model.DiscordGuild, cfgMap map[string]model.GuildConfig, isAdmin bool, discordName, discordAvatar string) {
+templ Guilds(userGuilds []model.DiscordGuild, cfgMap map[string]model.GuildConfig, gmMap map[string][]model.GuildModule, isAdmin bool, discordName, discordAvatar string) {
 	@layouts.Base("Datablox - My Servers", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
 		<div class="max-w-5xl mx-auto flex flex-col gap-6">
 			<div class="flex items-center justify-between">
@@ -30,7 +33,7 @@ templ Guilds(userGuilds []model.DiscordGuild, cfgMap map[string]model.GuildConfi
 			} else {
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 					for _, g := range userGuilds {
-						@guildCard(g, cfgMap[g.ID])
+						@guildCard(g, cfgMap[g.ID], gmMap[g.ID])
 					}
 				</div>
 			}
@@ -38,7 +41,7 @@ templ Guilds(userGuilds []model.DiscordGuild, cfgMap map[string]model.GuildConfi
 	}
 }
 
-templ guildCard(g model.DiscordGuild, cfg model.GuildConfig) {
+templ guildCard(g model.DiscordGuild, cfg model.GuildConfig, gms []model.GuildModule) {
 	<a href={ templ.SafeURL("/guild/" + g.ID) } class="group rounded-2xl bg-white border border-slate-200/80 shadow-sm p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all flex flex-col gap-3">
 		<div class="flex items-center gap-3">
 			if g.Icon != "" {
@@ -52,25 +55,45 @@ templ guildCard(g model.DiscordGuild, cfg model.GuildConfig) {
 			</div>
 		</div>
 		<div class="flex flex-wrap gap-1.5">
-			if cfg.ChannelID != "" {
-				@badge.Badge(badge.Props{Variant: "secondary"}) { Feed }
-			} else {
-				@badge.Badge(badge.Props{Variant: "outline"}) { No feed }
+			{{ enabledCount := 0 }}
+			for _, gm := range gms {
+				if gm.Enabled {
+					{{ enabledCount++ }}
+				}
 			}
-			if cfg.VerifyChannelID != "" {
-				@badge.Badge(badge.Props{Variant: "secondary"}) { Verify }
+			if enabledCount == 0 {
+				@badge.Badge(badge.Props{Variant: "outline"}) { 0/8 modules }
 			} else {
-				@badge.Badge(badge.Props{Variant: "outline"}) { No verify }
+				{{ shown := 0 }}
+				for _, m := range core.SortedModules(gms) {
+					if shown >= 3 {
+						break
+					}
+					{{ isEn := false }}
+					for _, gm := range gms {
+						if gm.Slug == m.Slug && gm.Enabled {
+							{{ isEn = true }}
+						}
+					}
+					if isEn {
+						@badge.Badge(badge.Props{Variant: "secondary"}) { { m.Name } }
+						{{ shown++ }}
+					}
+				}
+				if enabledCount > 3 {
+					@badge.Badge(badge.Props{Variant: "outline"}) { +{ fmt.Sprintf("%d", enabledCount-3) } }
+				}
+				@badge.Badge(badge.Props{Variant: "outline"}) { { fmt.Sprintf("%d/8", enabledCount) } }
 			}
 			if g.Owner {
 				@badge.Badge() { Owner }
 			}
 		</div>
 		<div class="text-xs text-slate-500 mt-1">
-			if cfg.ChannelID != "" || cfg.VerifyChannelID != "" {
-				Configured
+			if enabledCount == 0 {
+				Not configured — enable modules in dashboard
 			} else {
-				Not configured — run /config in Discord
+				{ fmt.Sprintf("%d modules enabled", enabledCount) }
 			}
 		</div>
 	</a>

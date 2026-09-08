@@ -6,11 +6,12 @@ import (
 	"datablox/components/badge"
 	"datablox/components/card"
 	"datablox/components/table"
+	"datablox/internal/core"
 	"datablox/internal/model"
 	"datablox/internal/web/templates/layouts"
 )
 
-templ GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChannelName, verifyChannelName string, cfg model.GuildConfig, bindings []model.GuildBinding, reactionRoles []model.ReactionRole, isAdmin bool, discordName, discordAvatar string) {
+templ GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChannelName, verifyChannelName string, cfg model.GuildConfig, bindings []model.GuildBinding, reactionRoles []model.ReactionRole, guildModules []model.GuildModule, isAdmin bool, discordName, discordAvatar string) {
 	@layouts.Base(guildName+" - Datablox", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
 		<div class="max-w-5xl mx-auto flex flex-col gap-6">
 			<a href="/guilds" class="text-sm font-medium text-slate-500 hover:text-slate-900 inline-flex items-center gap-1">
@@ -26,7 +27,7 @@ templ GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedCha
 					}
 					<div>
 						<h1 class="text-2xl font-extrabold tracking-tight">{ guildName }</h1>
-						<p class="text-white/70 text-sm">Server manager - feed, verification, and bindings</p>
+							<p class="text-white/70 text-sm">Server manager — 8 modules: moderation, automod, leveling, welcome, reaction roles, bindings, verification and feeds</p>
 						<p class="text-white/50 text-xs mt-1">
 							if memberCount >= 0 {
 								{ fmt.Sprintf("%d members", memberCount) } - 
@@ -36,6 +37,56 @@ templ GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedCha
 					</div>
 				</div>
 			</div>
+			@card.Card() {
+				@card.Header() {
+					@card.Title() {
+						Modules — enable only what you need
+					}
+				}
+				@card.Content() {
+					<div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="module-grid">
+						for _, m := range core.SortedModules(guildModules) {
+							{{ isEnabled := false }}
+							for _, gm := range guildModules {
+								if gm.Slug == m.Slug && gm.Enabled {
+									{{ isEnabled = true }}
+								}
+							}
+							<div class={ "module-card rounded-xl border p-3 transition-colors", templ.KV("border-primary bg-blue-50", isEnabled), templ.KV("border-slate-200 bg-slate-50", !isEnabled) }>
+								<div class="flex items-center justify-between gap-2">
+									<div class="text-xs font-bold">{ m.Name }</div>
+									<button
+										class={ "text-[10px] px-2 py-1 rounded-full border font-semibold", templ.KV("bg-primary text-white border-primary", isEnabled), templ.KV("bg-white text-slate-500 border-slate-200", !isEnabled) }
+										data-slug={ m.Slug }
+										data-enabled={ fmt.Sprintf("%t", isEnabled) }
+										onclick="toggleModule(this)"
+									>
+										if isEnabled {
+											ON
+										} else {
+											OFF
+										}
+									</button>
+								</div>
+								<div class="text-[11px] text-slate-500">{ m.Description }</div>
+							</div>
+						}
+					</div>
+					<p class="text-xs text-slate-400 mt-3">Toggle to enable — enabled modules sort first (A-Z). Changes via dashboard or <code class="bg-slate-100 px-1 py-0.5 rounded">/config</code> in Discord.</p>
+					<script>
+						function toggleModule(btn){
+							const slug = btn.dataset.slug;
+							const enabled = btn.dataset.enabled === 'true';
+							fetch('/api/guild-modules', {
+								method: 'POST',
+								credentials: 'same-origin',
+								headers: {'Content-Type':'application/json'},
+								body: JSON.stringify({guild_id: '{ guildID }', slug: slug, enabled: !enabled})
+							}).then(r=>{ if(r.ok) location.reload(); else r.text().then(t=>alert('Failed: '+r.status+' '+t)); });
+						}
+					</script>
+				}
+			}
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 				@card.Card() {
 					@card.Header() {
