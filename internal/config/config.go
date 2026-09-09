@@ -30,12 +30,8 @@ type Config struct {
 func Load() (*Config, error) {
 	loadDotEnv()
 
-	adminSet := parseIDSet(os.Getenv("ADMIN_DISCORD_IDS"))
-	mergeSet(adminSet, parseIDSet(os.Getenv("ADMIN_ID")))
-	mergeSet(adminSet, parseIDSet(os.Getenv("ADMIN_IDS")))
-	ownerSet := parseIDSet(os.Getenv("OWNER_ID"))
-	mergeSet(ownerSet, parseIDSet(os.Getenv("OWNER_IDS")))
-	mergeSet(adminSet, ownerSet) // owners are also admins for isAdmin
+	adminSet := parseIDSet(os.Getenv("ADMIN_IDS"))
+	ownerSet := parseIDSet(os.Getenv("OWNER_IDS"))
 	cfg := &Config{
 		DiscordToken:    os.Getenv("DISCORD_TOKEN"),
 		GuildID:         os.Getenv("GUILD_ID"),
@@ -134,10 +130,4 @@ func parseIDSet(s string) map[string]bool {
 		}
 	}
 	return set
-}
-
-func mergeSet(dst, src map[string]bool) {
-	for k := range src {
-		dst[k] = true
-	}
 }

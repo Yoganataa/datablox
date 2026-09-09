@@ -6,10 +6,16 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
+	"datablox/internal/auth"
 	"datablox/internal/service"
 )
 
 func (b *Bot) handleConfig(ctx context.Context, i *discordgo.InteractionCreate, _ discordgo.ApplicationCommandInteractionData) {
+	p := b.principalForInteraction(i)
+	if !auth.Can(p, auth.GuildModulesManage, auth.Resource{GuildID: i.GuildID}) {
+		respondEphemeral(b.sess, i, "You don't have permission.")
+		return
+	}
 	cfg, _ := b.svc.Store.GetGuildConfig(ctx, i.GuildID)
 	feedChannel := "_(not set)_"
 	if cfg.ChannelID != "" {

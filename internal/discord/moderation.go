@@ -7,6 +7,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
+	"datablox/internal/auth"
 	"datablox/internal/model"
 )
 
@@ -60,8 +61,9 @@ func moderationCommands() []*discordgo.ApplicationCommand {
 }
 
 func (b *Bot) handleWarn(ctx context.Context, i *discordgo.InteractionCreate, data discordgo.ApplicationCommandInteractionData) {
-	if !hasManageGuild(i) {
-		respondEphemeral(b.sess, i, "You need Manage Server permission.")
+	p := b.principalForInteraction(i)
+	if !auth.Can(p, auth.ModerationWarn, auth.Resource{GuildID: i.GuildID}) {
+		respondEphemeral(b.sess, i, "You don't have permission.")
 		return
 	}
 	user := optionUser(&data, "user")
@@ -75,19 +77,46 @@ func (b *Bot) handleWarn(ctx context.Context, i *discordgo.InteractionCreate, da
 	} else {
 		targetID = option(&data, "user")
 	}
+	if err := b.checkSelfTarget(getInvokerID(i), targetID); err != nil {
+		respondEphemeral(b.sess, i, "You cannot target yourself.")
+		return
+	}
+	target := b.targetForUser(i.GuildID, targetID)
+	if !auth.CanTarget(p, auth.ModerationWarn, auth.Resource{GuildID: i.GuildID}, target) {
+		respondEphemeral(b.sess, i, "You cannot warn this user.")
+		return
+	}
 	_, _ = b.svc.Store.CreateInfraction(ctx, model.Infraction{GuildID: i.GuildID, UserID: targetID, ModeratorID: getInvokerID(i), Type: "warn", Reason: reason})
 	respondText(b.sess, i, fmt.Sprintf("⚠️ Warned <@%s> — %s", targetID, reason))
 }
 
 func (b *Bot) handleMute(ctx context.Context, i *discordgo.InteractionCreate, data discordgo.ApplicationCommandInteractionData) {
-	if !hasManageGuild(i) {
-		respondEphemeral(b.sess, i, "You need Manage Server permission.")
+	p := b.principalForInteraction(i)
+	if !auth.Can(p, auth.ModerationMute, auth.Resource{GuildID: i.GuildID}) {
+		respondEphemeral(b.sess, i, "You don't have permission.")
 		return
 	}
 	user := optionUser(&data, "user")
 	targetID := ""
 	if user != nil {
 		targetID = user.ID
+	}
+	if err := b.checkSelfTarget(getInvokerID(i), targetID); err != nil {
+		respondEphemeral(b.sess, i, "You cannot target yourself.")
+		return
+	}
+	target := b.targetForUser(i.GuildID, targetID)
+	if !auth.CanTarget(p, auth.ModerationMute, auth.Resource{GuildID: i.GuildID}, target) {
+		respondEphemeral(b.sess, i, "You cannot mute this user.")
+		return
+	}
+	if err := b.checkBotPermissions(i.GuildID, discordgo.PermissionModerateMembers); err != nil {
+		respondEphemeral(b.sess, i, "Bot lacks permission to timeout members.")
+		return
+	}
+	if err := b.checkRoleHierarchy(i.GuildID, targetID); err != nil {
+		respondEphemeral(b.sess, i, "Target is higher than or equal to bot.")
+		return
 	}
 	minutes := 10
 	for _, o := range data.Options {
@@ -112,14 +141,32 @@ func (b *Bot) handleMute(ctx context.Context, i *discordgo.InteractionCreate, da
 }
 
 func (b *Bot) handleBan(ctx context.Context, i *discordgo.InteractionCreate, data discordgo.ApplicationCommandInteractionData) {
-	if !hasManageGuild(i) {
-		respondEphemeral(b.sess, i, "You need Manage Server permission.")
+	p := b.principalForInteraction(i)
+	if !auth.Can(p, auth.ModerationBan, auth.Resource{GuildID: i.GuildID}) {
+		respondEphemeral(b.sess, i, "You don't have permission.")
 		return
 	}
 	user := optionUser(&data, "user")
 	targetID := ""
 	if user != nil {
 		targetID = user.ID
+	}
+	if err := b.checkSelfTarget(getInvokerID(i), targetID); err != nil {
+		respondEphemeral(b.sess, i, "You cannot target yourself.")
+		return
+	}
+	target := b.targetForUser(i.GuildID, targetID)
+	if !auth.CanTarget(p, auth.ModerationBan, auth.Resource{GuildID: i.GuildID}, target) {
+		respondEphemeral(b.sess, i, "You cannot ban this user.")
+		return
+	}
+	if err := b.checkBotPermissions(i.GuildID, discordgo.PermissionBanMembers); err != nil {
+		respondEphemeral(b.sess, i, "Bot lacks permission to ban members.")
+		return
+	}
+	if err := b.checkRoleHierarchy(i.GuildID, targetID); err != nil {
+		respondEphemeral(b.sess, i, "Target is higher than or equal to bot.")
+		return
 	}
 	reason := option(&data, "reason")
 	if reason == "" {
@@ -135,14 +182,32 @@ func (b *Bot) handleBan(ctx context.Context, i *discordgo.InteractionCreate, dat
 }
 
 func (b *Bot) handleKick(ctx context.Context, i *discordgo.InteractionCreate, data discordgo.ApplicationCommandInteractionData) {
-	if !hasManageGuild(i) {
-		respondEphemeral(b.sess, i, "You need Manage Server permission.")
+	p := b.principalForInteraction(i)
+	if !auth.Can(p, auth.ModerationKick, auth.Resource{GuildID: i.GuildID}) {
+		respondEphemeral(b.sess, i, "You don't have permission.")
 		return
 	}
 	user := optionUser(&data, "user")
 	targetID := ""
 	if user != nil {
 		targetID = user.ID
+	}
+	if err := b.checkSelfTarget(getInvokerID(i), targetID); err != nil {
+		respondEphemeral(b.sess, i, "You cannot target yourself.")
+		return
+	}
+	target := b.targetForUser(i.GuildID, targetID)
+	if !auth.CanTarget(p, auth.ModerationKick, auth.Resource{GuildID: i.GuildID}, target) {
+		respondEphemeral(b.sess, i, "You cannot kick this user.")
+		return
+	}
+	if err := b.checkBotPermissions(i.GuildID, discordgo.PermissionKickMembers); err != nil {
+		respondEphemeral(b.sess, i, "Bot lacks permission to kick members.")
+		return
+	}
+	if err := b.checkRoleHierarchy(i.GuildID, targetID); err != nil {
+		respondEphemeral(b.sess, i, "Target is higher than or equal to bot.")
+		return
 	}
 	reason := option(&data, "reason")
 	err := b.sess.GuildMemberDeleteWithReason(i.GuildID, targetID, reason)
@@ -155,8 +220,13 @@ func (b *Bot) handleKick(ctx context.Context, i *discordgo.InteractionCreate, da
 }
 
 func (b *Bot) handlePurge(ctx context.Context, i *discordgo.InteractionCreate, data discordgo.ApplicationCommandInteractionData) {
-	if !hasManageMessages(i) {
-		respondEphemeral(b.sess, i, "You need Manage Messages permission.")
+	p := b.principalForInteraction(i)
+	if !auth.Can(p, auth.ModerationPurge, auth.Resource{GuildID: i.GuildID}) {
+		respondEphemeral(b.sess, i, "You don't have permission.")
+		return
+	}
+	if err := b.checkBotPermissions(i.GuildID, discordgo.PermissionManageMessages); err != nil {
+		respondEphemeral(b.sess, i, "Bot lacks permission to manage messages.")
 		return
 	}
 	amount := 10
@@ -189,20 +259,6 @@ func (b *Bot) handlePurge(ctx context.Context, i *discordgo.InteractionCreate, d
 		_ = b.sess.ChannelMessagesBulkDelete(channelID, ids)
 	}
 	respondEphemeral(b.sess, i, fmt.Sprintf("🧹 Purged %d messages.", len(ids)))
-}
-
-func hasManageGuild(i *discordgo.InteractionCreate) bool {
-	if i.Member == nil {
-		return false
-	}
-	return i.Member.Permissions&discordgo.PermissionManageServer != 0 || i.Member.Permissions&discordgo.PermissionAdministrator != 0
-}
-
-func hasManageMessages(i *discordgo.InteractionCreate) bool {
-	if i.Member == nil {
-		return false
-	}
-	return i.Member.Permissions&discordgo.PermissionManageMessages != 0 || i.Member.Permissions&discordgo.PermissionAdministrator != 0
 }
 
 func getInvokerID(i *discordgo.InteractionCreate) string {

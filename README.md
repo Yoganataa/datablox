@@ -34,14 +34,13 @@ REFRESH_INTERVAL=30m
 LOG_LEVEL=info
 WEB_PORT=8080
 WEB_URL=http://localhost:8080     # / https://datablox.devest.live (prod via cloudflared)
-OWNER_ID= / OWNER_IDS=123,456     # super admin (bypass all, BotOwner)
-ADMIN_ID= / ADMIN_IDS=123,456     # bot admin (global, BotAdmin, ADMIN_DISCORD_IDS legacy tetap support)
-ADMIN_DISCORD_IDS=                # legacy, merge ke ADMIN_IDS
+OWNER_IDS=123,456     # BotOwner (global, precedence over ADMIN_IDS)
+ADMIN_IDS=123,456     # BotAdmin (global, tanpa bot.admins.manage)
 DISCORD_CLIENT_ID= / DISCORD_CLIENT_SECRET=  # Discord OAuth (hidden /auth/discord/login)
 ROBLOX_CLIENT_ID= / ROBLOX_CLIENT_SECRET=    # Roblox OAuth https://create.roblox.com/dashboard/credentials
 ```
 
-`OWNER_IDS > ADMIN_IDS` jika ada di dua-duanya. `isGuildAdmin` = `isOwnerBot || isAdminBot || GuildOwner || MANAGE_GUILD (0x20) || ADMINISTRATOR (0x8)`.
+`OWNER_IDS > ADMIN_IDS` jika ada di dua-duanya. Otorisasi via `auth.Can()/CanTarget()` (Principal BotRole × GuildRole + Permissions), bukan hierarchy 1–5.
 
 ## Commands (12 + autocomplete)
 
@@ -64,7 +63,7 @@ Semua `experience` field autocomplete via `SearchNames` FTS limit 10.
 
 ## 8 Modules — Equal (enable what you need)
 
-Landing `Everything you need` + `guild_detail` + `dashboard` + `guilds` semua grid `lg:grid-cols-4` order alphabet `AutoMod, Bindings, Feed, Leveling, Moderation, Reaction Roles, Verify, Welcome` — sorting `enabled-first A-Z` via `internal/core/modules.go:17` `SortedModules(guildModules)` (enabled di atas A-Z, disabled di bawah A-Z). `GET /api/modules` 8 rows, `GET/POST /api/guild-modules` toggle per guild (`isGuildAdmin`).
+Landing `Everything you need` + `guild_detail` + `dashboard` + `guilds` semua grid `lg:grid-cols-4` order alphabet `AutoMod, Bindings, Feed, Leveling, Moderation, Reaction Roles, Verify, Welcome` — sorting `enabled-first A-Z` via `internal/core/modules.go:17` `SortedModules(guildModules)` (enabled di atas A-Z, disabled di bawah A-Z). `GET /api/modules` 8 rows, `GET/POST /api/guild-modules` toggle per guild (`auth.Can()`).
 
 | Modul | Deskripsi | Store |
 |---|---|---|
@@ -99,7 +98,7 @@ Embed `internal/discord/embed.go:1`: `Genre | Playing | Visits` + `Rating 👍 %
 
 ```
 cmd/bot, cmd/web (HMR --proxy)
-internal/config (OWNER_IDS/ADMIN_IDS merge), model (Module/GuildModule/FeedConfig/VerifyConfig), store (interface), store/sqlite (FTS5, WAL, migrations 0001-0009 module_registry)
+internal/config (OWNER_IDS/ADMIN_IDS canonical), model (Module/GuildModule/FeedConfig/VerifyConfig), store (interface), store/sqlite (FTS5, WAL, migrations 0001-0009 module_registry)
 internal/roblox (ExtractPlaceID, ResolveUniverseID, GetGameDetail, GetVotes batch, GetThumbnailURL)
 internal/service (genre infer, Add/RefreshOne/RefreshAll)
 internal/discord (bot, commands, moderation, leveling, welcome/banner, reaction_roles reverse, panel)

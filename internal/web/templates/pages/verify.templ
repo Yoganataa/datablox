@@ -4,8 +4,8 @@ import (
 	"datablox/internal/web/templates/layouts"
 )
 
-templ Verify(isAdmin bool, discordName, discordAvatar string, verified bool, guildID string) {
-	@layouts.Base("Datablox - Verify", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
+templ Verify(isBotStaff bool, discordName, discordAvatar string, verified bool, guildID string) {
+	@layouts.Base("Datablox - Verify", layouts.Nav{IsBotStaff: isBotStaff, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
 		<div class="mx-auto max-w-3xl">
 			if verified {
 				<div class="rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white p-8 sm:p-10 text-center shadow-2xl shadow-emerald-500/30">

@@ -14,7 +14,7 @@ import (
 	"datablox/internal/web/templates/layouts"
 )
 
-func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool, discordName, discordAvatar, clientID string) templ.Component {
+func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isBotStaff bool, discordName, discordAvatar, clientID string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -281,7 +281,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					if isAdmin {
+					if isBotStaff {
 						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"mt-4 rounded-xl bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900\">Signed in as <b>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
@@ -323,7 +323,7 @@ func Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool,
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layouts.Base("Datablox - Dashboard", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layouts.Base("Datablox - Dashboard", layouts.Nav{IsBotStaff: isBotStaff, DiscordName: discordName, DiscordAvatar: discordAvatar}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

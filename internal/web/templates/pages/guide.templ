@@ -2,8 +2,8 @@ package pages
 
 import "datablox/internal/web/templates/layouts"
 
-templ Guide(isAdmin bool, discordName, discordAvatar string) {
-	@layouts.Base("Datablox - Guide", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
+templ Guide(isBotStaff bool, discordName, discordAvatar string) {
+	@layouts.Base("Datablox - Guide", layouts.Nav{IsBotStaff: isBotStaff, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
 		<div class="max-w-4xl mx-auto">
 			<div class="text-center mb-10">
 				<h1 class="text-3xl font-extrabold tracking-tight">Guide</h1>

@@ -10,7 +10,10 @@ import (
 	"strings"
 	"sync"
 
+	"datablox/internal/auth"
+	"datablox/internal/auth/adapters"
 	"datablox/internal/config"
+	discordpkg "datablox/internal/discord"
 	"datablox/internal/model"
 	"datablox/internal/roblox"
 	"datablox/internal/service"
@@ -99,14 +102,6 @@ func (s *Server) Start() error {
 	return http.ListenAndServe(addr, s.mux)
 }
 
-func (s *Server) isAdmin(r *http.Request) bool {
-	c, err := r.Cookie("discord_id")
-	if err != nil || c.Value == "" {
-		return false
-	}
-	return s.cfg.AdminDiscordIDs[c.Value]
-}
-
 func (s *Server) discordName(r *http.Request) string {
 	if c, err := r.Cookie("discord_name"); err == nil {
 		return c.Value
@@ -121,28 +116,56 @@ func (s *Server) discordAvatar(r *http.Request) string {
 	return ""
 }
 
+// navBotStaff reports whether the signed-in user is bot staff (BotOwner/BotAdmin).
+// Display-only: backs the template isBotStaff flag (super-admin banner). Never a gate;
+// all authorization decisions go through auth.Can()/CanTarget().
+func (s *Server) navBotStaff(r *http.Request) bool {
+	c, err := r.Cookie("discord_id")
+	if err != nil || c.Value == "" {
+		return false
+	}
+	br := adapters.NewBotRoleResolverFromBoolMap(s.cfg.OwnerDiscordIDs, s.cfg.AdminDiscordIDs).ResolveBotRole(c.Value)
+	return br == auth.BotOwner || br == auth.BotAdmin
+}
+
 func (s *Server) cookieSecure() bool {
 	return strings.HasPrefix(s.cfg.WebURL, "https://")
 }
-func (s *Server) isGuildAdmin(r *http.Request, guildID string) bool {
-	// Super admin bypass
-	if s.isAdmin(r) {
-		return true
+func (s *Server) principalForGuild(r *http.Request, guildID string) (auth.Principal, bool) {
+	c, err := r.Cookie("discord_id")
+	if err != nil || c.Value == "" {
+		return auth.Principal{}, false
 	}
-	tok := ""
-	if c, err := r.Cookie("discord_token"); err == nil {
-		tok = c.Value
-	}
-	if tok == "" {
-		return false
-	}
-	guilds := s.fetchUserGuilds(tok)
-	for _, g := range guilds {
-		if g.ID == guildID && (g.Permissions&0x20 != 0 || g.Permissions&0x8 != 0 || g.Owner) {
-			return true
+	userID := c.Value
+	// BotRole from config
+	botResolver := adapters.NewBotRoleResolverFromBoolMap(s.cfg.OwnerDiscordIDs, s.cfg.AdminDiscordIDs)
+	botRole := botResolver.ResolveBotRole(userID)
+	// GuildRole + Permissions from Discord
+	var guildOwnerID string
+	var permsBits int64
+	if tok, err := r.Cookie("discord_token"); err == nil && tok.Value != "" {
+		for _, g := range s.fetchUserGuilds(tok.Value) {
+			if g.ID == guildID {
+				guildOwnerID = ""
+				if g.Owner {
+					// OwnerID is userID itself if owner
+					guildOwnerID = userID
+				}
+				permsBits = g.Permissions
+				break
+			}
 		}
 	}
-	return false
+	// Fallback: try fetch via bot for ownerID
+	if guildOwnerID == "" && s.discord != nil {
+		if g, err := s.discord.Guild(guildID); err == nil && g != nil {
+			guildOwnerID = g.OwnerID
+		}
+	}
+	perms := discordpkg.ExtractPermissions(permsBits)
+	guildResolver := adapters.NewGuildResolver()
+	guildRole := guildResolver.ResolveGuildRole(guildOwnerID, userID, perms)
+	return adapters.ResolvePrincipal(userID, guildID, botRole, guildRole, perms), true
 }
 
 type discordGuild = model.DiscordGuild
@@ -229,7 +252,7 @@ func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 	guildCount, _ := s.store.CountGuilds(r.Context())
 	expCount, _ := s.store.Count(r.Context())
 	voteCount, _ := s.store.CountVotes(r.Context())
-_ = pages.Landing(s.isAdmin(r), s.discordName(r), s.discordAvatar(r), s.cfg.DiscordClientID, guildCount, expCount, voteCount).Render(r.Context(), w)
+	_ = pages.Landing(s.navBotStaff(r), s.discordName(r), s.discordAvatar(r), s.cfg.DiscordClientID, guildCount, expCount, voteCount).Render(r.Context(), w)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -255,11 +278,15 @@ func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {
 		tok = c.Value
 	}
 	userGuilds := s.fetchUserGuilds(tok)
-	// Build admin guild IDs map
+	// Build guilds where principal can view panel (per-guild Can, not a global gate)
 	adminIDs := make(map[string]bool)
 	var adminGuilds []model.DiscordGuild
 	for _, g := range userGuilds {
-		if g.Permissions&0x20 != 0 || g.Permissions&0x8 != 0 || g.Owner {
+		p, ok := s.principalForGuild(r, g.ID)
+		if !ok {
+			continue
+		}
+		if auth.Can(p, auth.GuildPanelView, auth.Resource{GuildID: g.ID}) {
 			adminIDs[g.ID] = true
 			adminGuilds = append(adminGuilds, g)
 		}
@@ -276,7 +303,7 @@ func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {
 			gmMap[g.ID] = gms
 		}
 	}
-	_ = pages.Guilds(adminGuilds, cfgMap, gmMap, s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
+	_ = pages.Guilds(adminGuilds, cfgMap, gmMap, s.navBotStaff(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
@@ -297,7 +324,12 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/auth/discord/login", http.StatusFound)
 		return
 	}
-	if !s.isGuildAdmin(r, guildID) {
+	p, ok := s.principalForGuild(r, guildID)
+	if !ok {
+		http.Redirect(w, r, "/auth/discord/login", http.StatusFound)
+		return
+	}
+	if !auth.Can(p, auth.GuildPanelView, auth.Resource{GuildID: guildID}) {
 		http.Error(w, "you are not admin of this server", http.StatusForbidden)
 		return
 	}
@@ -366,7 +398,7 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 	if memberCount == 0 {
 		memberCount = -1 // unknown in web HMR, hide
 	}
-	_ = pages.GuildDetail(guildID, guildName, guildIcon, memberCount, feedChannelName, verifyChannelName, cfg, bindings, reactionRoles, guildModules, s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
+	_ = pages.GuildDetail(guildID, guildName, guildIcon, memberCount, feedChannelName, verifyChannelName, cfg, bindings, reactionRoles, guildModules, s.navBotStaff(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func keys(m map[string]bool) []string {
@@ -393,11 +425,11 @@ func (s *Server) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
 			guildID = c.Value
 		}
 	}
-	_ = pages.Verify(s.isAdmin(r), s.discordName(r), s.discordAvatar(r), verified, guildID).Render(r.Context(), w)
+	_ = pages.Verify(s.navBotStaff(r), s.discordName(r), s.discordAvatar(r), verified, guildID).Render(r.Context(), w)
 }
 
 func (s *Server) handleGuide(w http.ResponseWriter, r *http.Request) {
-	_ = pages.Guide(s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
+	_ = pages.Guide(s.navBotStaff(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
@@ -405,19 +437,19 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	expCount, _ := s.store.Count(r.Context())
 	voteCount, _ := s.store.CountVotes(r.Context())
 	botOnline := s.discord != nil
-	_ = pages.Status(s.isAdmin(r), s.discordName(r), s.discordAvatar(r), botOnline, guildCount, expCount, voteCount).Render(r.Context(), w)
+	_ = pages.Status(s.navBotStaff(r), s.discordName(r), s.discordAvatar(r), botOnline, guildCount, expCount, voteCount).Render(r.Context(), w)
 }
 
 func (s *Server) handlePrivacy(w http.ResponseWriter, r *http.Request) {
-	_ = pages.Privacy(s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
+	_ = pages.Privacy(s.navBotStaff(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleTerms(w http.ResponseWriter, r *http.Request) {
-	_ = pages.Terms(s.isAdmin(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
+	_ = pages.Terms(s.navBotStaff(r), s.discordName(r), s.discordAvatar(r)).Render(r.Context(), w)
 }
 
 func (s *Server) handleListGuilds(w http.ResponseWriter, r *http.Request) {
-	if !s.isAdmin(r) {
+	if _, err := r.Cookie("discord_id"); err != nil {
 		http.Error(w, "admin only", http.StatusUnauthorized)
 		return
 	}
@@ -426,20 +458,32 @@ func (s *Server) handleListGuilds(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	// Discovery: include only guilds where principal can view the panel.
+	visible := make([]model.GuildConfig, 0, len(guilds))
+	for _, g := range guilds {
+		p, ok := s.principalForGuild(r, g.GuildID)
+		if !ok {
+			continue
+		}
+		if auth.Can(p, auth.GuildPanelView, auth.Resource{GuildID: g.GuildID}) {
+			visible = append(visible, g)
+		}
+	}
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(guilds)
+	_ = json.NewEncoder(w).Encode(visible)
 }
 
 func (s *Server) handleBindings(w http.ResponseWriter, r *http.Request) {
-	if !s.isAdmin(r) {
-		http.Error(w, "admin only", http.StatusUnauthorized)
-		return
-	}
 	switch r.Method {
 	case http.MethodGet:
 		guildID := r.URL.Query().Get("guild_id")
 		if guildID == "" {
 			http.Error(w, "guild_id required", http.StatusBadRequest)
+			return
+		}
+		p, ok := s.principalForGuild(r, guildID)
+		if !ok || !auth.Can(p, auth.GuildBindingsView, auth.Resource{GuildID: guildID}) {
+			http.Error(w, "not admin of this guild", http.StatusForbidden)
 			return
 		}
 		bindings, _ := s.store.ListBindings(r.Context(), guildID)
@@ -448,6 +492,11 @@ func (s *Server) handleBindings(w http.ResponseWriter, r *http.Request) {
 		var b model.GuildBinding
 		if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		p, ok := s.principalForGuild(r, b.GuildID)
+		if !ok || !auth.Can(p, auth.GuildBindingsManage, auth.Resource{GuildID: b.GuildID}) {
+			http.Error(w, "not admin of this guild", http.StatusForbidden)
 			return
 		}
 		id, err := s.store.CreateBinding(r.Context(), b)
@@ -461,6 +510,11 @@ func (s *Server) handleBindings(w http.ResponseWriter, r *http.Request) {
 		idStr := r.URL.Query().Get("id")
 		var id int64
 		fmt.Sscan(idStr, &id)
+		p, ok := s.principalForGuild(r, guildID)
+		if !ok || !auth.Can(p, auth.GuildBindingsManage, auth.Resource{GuildID: guildID}) {
+			http.Error(w, "not admin of this guild", http.StatusForbidden)
+			return
+		}
 		if err := s.store.DeleteBinding(r.Context(), id, guildID); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -472,10 +526,6 @@ func (s *Server) handleBindings(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleReactionRoles(w http.ResponseWriter, r *http.Request) {
-	if !s.isAdmin(r) {
-		http.Error(w, "admin only", http.StatusUnauthorized)
-		return
-	}
 	switch r.Method {
 	case http.MethodGet:
 		guildID := r.URL.Query().Get("guild_id")
@@ -483,7 +533,8 @@ func (s *Server) handleReactionRoles(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "guild_id required", http.StatusBadRequest)
 			return
 		}
-		if !s.isGuildAdmin(r, guildID) {
+		p, ok := s.principalForGuild(r, guildID)
+		if !ok || !auth.Can(p, auth.GuildReactionView, auth.Resource{GuildID: guildID}) {
 			http.Error(w, "not admin of this guild", http.StatusForbidden)
 			return
 		}
@@ -496,7 +547,8 @@ func (s *Server) handleReactionRoles(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if !s.isGuildAdmin(r, rr.GuildID) {
+		p, ok := s.principalForGuild(r, rr.GuildID)
+		if !ok || !auth.Can(p, auth.GuildReactionManage, auth.Resource{GuildID: rr.GuildID}) {
 			http.Error(w, "not admin of this guild", http.StatusForbidden)
 			return
 		}
@@ -515,7 +567,8 @@ func (s *Server) handleReactionRoles(w http.ResponseWriter, r *http.Request) {
 		idStr := r.URL.Query().Get("id")
 		var id int64
 		fmt.Sscan(idStr, &id)
-		if !s.isGuildAdmin(r, guildID) {
+		p, ok := s.principalForGuild(r, guildID)
+		if !ok || !auth.Can(p, auth.GuildReactionManage, auth.Resource{GuildID: guildID}) {
 			http.Error(w, "not admin of this guild", http.StatusForbidden)
 			return
 		}
@@ -530,14 +583,11 @@ func (s *Server) handleReactionRoles(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAutomod(w http.ResponseWriter, r *http.Request) {
-	if !s.isAdmin(r) {
-		http.Error(w, "admin only", http.StatusUnauthorized)
-		return
-	}
 	switch r.Method {
 	case http.MethodGet:
 		gid := r.URL.Query().Get("guild_id")
-		if !s.isGuildAdmin(r, gid) {
+		p, ok := s.principalForGuild(r, gid)
+		if !ok || !auth.Can(p, auth.GuildAutomodView, auth.Resource{GuildID: gid}) {
 			http.Error(w, "not admin", http.StatusForbidden)
 			return
 		}
@@ -550,7 +600,8 @@ func (s *Server) handleAutomod(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if !s.isGuildAdmin(r, cfg.GuildID) {
+		p, ok := s.principalForGuild(r, cfg.GuildID)
+		if !ok || !auth.Can(p, auth.GuildAutomodManage, auth.Resource{GuildID: cfg.GuildID}) {
 			http.Error(w, "not admin", http.StatusForbidden)
 			return
 		}
@@ -562,14 +613,11 @@ func (s *Server) handleAutomod(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleWelcome(w http.ResponseWriter, r *http.Request) {
-	if !s.isAdmin(r) {
-		http.Error(w, "admin only", http.StatusUnauthorized)
-		return
-	}
 	switch r.Method {
 	case http.MethodGet:
 		gid := r.URL.Query().Get("guild_id")
-		if !s.isGuildAdmin(r, gid) {
+		p, ok := s.principalForGuild(r, gid)
+		if !ok || !auth.Can(p, auth.GuildWelcomeView, auth.Resource{GuildID: gid}) {
 			http.Error(w, "not admin", http.StatusForbidden)
 			return
 		}
@@ -582,7 +630,8 @@ func (s *Server) handleWelcome(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if !s.isGuildAdmin(r, cfg.GuildID) {
+		p, ok := s.principalForGuild(r, cfg.GuildID)
+		if !ok || !auth.Can(p, auth.GuildWelcomeManage, auth.Resource{GuildID: cfg.GuildID}) {
 			http.Error(w, "not admin", http.StatusForbidden)
 			return
 		}
@@ -635,7 +684,8 @@ func (s *Server) handleGuildModules(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "guild_id and slug required", http.StatusBadRequest)
 			return
 		}
-		if !s.isGuildAdmin(r, req.GuildID) {
+		p, ok := s.principalForGuild(r, req.GuildID)
+		if !ok || !auth.Can(p, auth.GuildModulesManage, auth.Resource{GuildID: req.GuildID}) {
 			http.Error(w, "not admin of this guild", http.StatusForbidden)
 			return
 		}

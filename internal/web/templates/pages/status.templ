@@ -2,8 +2,8 @@ package pages
 
 import "datablox/internal/web/templates/layouts"
 
-templ Status(isAdmin bool, discordName, discordAvatar string, botOnline bool, guildCount, expCount, voteCount int) {
-	@layouts.Base("Datablox - Status", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
+templ Status(isBotStaff bool, discordName, discordAvatar string, botOnline bool, guildCount, expCount, voteCount int) {
+	@layouts.Base("Datablox - Status", layouts.Nav{IsBotStaff: isBotStaff, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
 		<div class="max-w-4xl mx-auto">
 			<div class="text-center mb-8">
 				<h1 class="text-3xl font-extrabold tracking-tight">Status</h1>

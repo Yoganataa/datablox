@@ -6,8 +6,8 @@ import (
 	"datablox/internal/web/templates/layouts"
 )
 
-templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool, discordName, discordAvatar, clientID string) {
-	@layouts.Base("Datablox - Dashboard", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
+templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isBotStaff bool, discordName, discordAvatar, clientID string) {
+	@layouts.Base("Datablox - Dashboard", layouts.Nav{IsBotStaff: isBotStaff, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
 		<div class="flex flex-col gap-8">
 			<div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0055ff] text-white p-8 sm:p-10 shadow-2xl shadow-slate-900/30 relative overflow-hidden">
 				<div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-[#00A2FF]/30 blur-3xl"></div>
@@ -91,7 +91,7 @@ templ Dashboard(guildCount, expCount, voteCount, verifiedCount int, isAdmin bool
 						Each server enables only the modules it needs — moderation, automod, leveling, welcome, reaction roles, bindings, verification and feeds. Configure with <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">/config</code> in Discord.
 						Server data stays private. Only admins with Manage Server can configure their community.
 					</p>
-					if isAdmin {
+					if isBotStaff {
 						<div class="mt-4 rounded-xl bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">
 							Signed in as <b>{ discordName }</b> — you have super-admin access. Use Discord <code class="bg-white px-1 py-0.5 rounded">/config</code> in each server to manage.
 						</div>

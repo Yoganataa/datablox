@@ -19,7 +19,7 @@ import (
 	"datablox/internal/web/templates/layouts"
 )
 
-func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChannelName, verifyChannelName string, cfg model.GuildConfig, bindings []model.GuildBinding, reactionRoles []model.ReactionRole, guildModules []model.GuildModule, isAdmin bool, discordName, discordAvatar string) templ.Component {
+func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChannelName, verifyChannelName string, cfg model.GuildConfig, bindings []model.GuildBinding, reactionRoles []model.ReactionRole, guildModules []model.GuildModule, isBotStaff bool, discordName, discordAvatar string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -64,7 +64,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 				var templ_7745c5c3_Var3 string
 				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue("https://cdn.discordapp.com/icons/" + guildID + "/" + guildIcon + ".png?size=128")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 24, Col: 98}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 24, Col: 98}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 				if templ_7745c5c3_Err != nil {
@@ -77,7 +77,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.ResolveAttributeValue(guildName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 24, Col: 116}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 24, Col: 116}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
 				if templ_7745c5c3_Err != nil {
@@ -95,7 +95,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(guildName[:1])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 26, Col: 124}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 26, Col: 124}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -113,7 +113,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(guildName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 29, Col: 68}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 29, Col: 68}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -127,7 +127,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d members", memberCount))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 33, Col: 48}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 33, Col: 48}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -237,7 +237,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var13 string
 						templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var12).String())
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 1, Col: 0}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 1, Col: 0}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
 						if templ_7745c5c3_Err != nil {
@@ -250,7 +250,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var14 string
 						templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(m.Name)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 57, Col: 48}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 57, Col: 48}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 						if templ_7745c5c3_Err != nil {
@@ -272,7 +272,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var16 string
 						templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var15).String())
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 1, Col: 0}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 1, Col: 0}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var16)
 						if templ_7745c5c3_Err != nil {
@@ -285,7 +285,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var17 string
 						templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.ResolveAttributeValue(m.Slug)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 60, Col: 28}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 60, Col: 28}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var17)
 						if templ_7745c5c3_Err != nil {
@@ -298,7 +298,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var18 string
 						templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%t", isEnabled))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 61, Col: 53}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 61, Col: 53}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var18)
 						if templ_7745c5c3_Err != nil {
@@ -326,7 +326,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var19 string
 						templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(m.Description)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 71, Col: 63}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 71, Col: 63}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 						if templ_7745c5c3_Err != nil {
@@ -337,7 +337,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div><p class=\"text-xs text-slate-400 mt-3\">Toggle to enable — enabled modules sort first (A-Z). Changes via dashboard or <code class=\"bg-slate-100 px-1 py-0.5 rounded\">/config</code> in Discord.</p><script>\r\n\t\t\t\t\t\tfunction toggleModule(btn){\r\n\t\t\t\t\t\t\tconst slug = btn.dataset.slug;\r\n\t\t\t\t\t\t\tconst enabled = btn.dataset.enabled === 'true';\r\n\t\t\t\t\t\t\tfetch('/api/guild-modules', {\r\n\t\t\t\t\t\t\t\tmethod: 'POST',\r\n\t\t\t\t\t\t\t\tcredentials: 'same-origin',\r\n\t\t\t\t\t\t\t\theaders: {'Content-Type':'application/json'},\r\n\t\t\t\t\t\t\t\tbody: JSON.stringify({guild_id: '{ guildID }', slug: slug, enabled: !enabled})\r\n\t\t\t\t\t\t\t}).then(r=>{ if(r.ok) location.reload(); else r.text().then(t=>alert('Failed: '+r.status+' '+t)); });\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t</script>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div><p class=\"text-xs text-slate-400 mt-3\">Toggle to enable — enabled modules sort first (A-Z). Changes via dashboard or <code class=\"bg-slate-100 px-1 py-0.5 rounded\">/config</code> in Discord.</p><script>\n\t\t\t\t\t\tfunction toggleModule(btn){\n\t\t\t\t\t\t\tconst slug = btn.dataset.slug;\n\t\t\t\t\t\t\tconst enabled = btn.dataset.enabled === 'true';\n\t\t\t\t\t\t\tfetch('/api/guild-modules', {\n\t\t\t\t\t\t\t\tmethod: 'POST',\n\t\t\t\t\t\t\t\tcredentials: 'same-origin',\n\t\t\t\t\t\t\t\theaders: {'Content-Type':'application/json'},\n\t\t\t\t\t\t\t\tbody: JSON.stringify({guild_id: '{ guildID }', slug: slug, enabled: !enabled})\n\t\t\t\t\t\t\t}).then(r=>{ if(r.ok) location.reload(); else r.text().then(t=>alert('Failed: '+r.status+' '+t)); });\n\t\t\t\t\t\t}\n\t\t\t\t\t</script>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -437,7 +437,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var24 string
 						templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(feedChannelName)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 102, Col: 52}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 102, Col: 52}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 						if templ_7745c5c3_Err != nil {
@@ -450,7 +450,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var25 string
 						templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(cfg.ChannelID)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 102, Col: 118}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 102, Col: 118}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 						if templ_7745c5c3_Err != nil {
@@ -478,7 +478,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var26 string
 						templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(verifyChannelName)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 110, Col: 54}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 110, Col: 54}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 						if templ_7745c5c3_Err != nil {
@@ -491,7 +491,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var27 string
 						templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(cfg.VerifyChannelID)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 110, Col: 126}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 110, Col: 126}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 						if templ_7745c5c3_Err != nil {
@@ -527,7 +527,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 							var templ_7745c5c3_Var29 string
 							templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(cfg.DefaultGenre)
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 119, Col: 28}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 119, Col: 28}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 							if templ_7745c5c3_Err != nil {
@@ -641,7 +641,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var34 templ.SafeURL
 						templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("https://discord.com/channels/" + guildID + "/" + cfg.ChannelID + "/" + cfg.VoteMessageID))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 139, Col: 123}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 139, Col: 123}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 						if templ_7745c5c3_Err != nil {
@@ -674,7 +674,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var35 templ.SafeURL
 						templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("https://discord.com/channels/" + guildID + "/" + cfg.ChannelID + "/" + cfg.TopMessageID))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 149, Col: 122}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 149, Col: 122}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 						if templ_7745c5c3_Err != nil {
@@ -707,7 +707,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var36 templ.SafeURL
 						templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("https://discord.com/channels/" + guildID + "/" + cfg.VerifyChannelID + "/" + cfg.VerifyMessageID))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 159, Col: 131}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 159, Col: 131}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 						if templ_7745c5c3_Err != nil {
@@ -813,7 +813,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var41 string
 						templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d roles", len(reactionRoles)))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 177, Col: 52}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 177, Col: 52}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 						if templ_7745c5c3_Err != nil {
@@ -1027,7 +1027,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 											var templ_7745c5c3_Var52 string
 											templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinStringErrs(rr.Emoji)
 											if templ_7745c5c3_Err != nil {
-												return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 207, Col: 43}
+												return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 207, Col: 43}
 											}
 											_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var52))
 											if templ_7745c5c3_Err != nil {
@@ -1066,7 +1066,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 											var templ_7745c5c3_Var54 string
 											templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(rr.RoleID)
 											if templ_7745c5c3_Err != nil {
-												return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 210, Col: 54}
+												return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 210, Col: 54}
 											}
 											_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var54))
 											if templ_7745c5c3_Err != nil {
@@ -1113,7 +1113,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 												var templ_7745c5c3_Var57 string
 												templ_7745c5c3_Var57, templ_7745c5c3_Err = templ.JoinStringErrs(rr.Mode)
 												if templ_7745c5c3_Err != nil {
-													return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 214, Col: 21}
+													return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 214, Col: 21}
 												}
 												_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var57))
 												if templ_7745c5c3_Err != nil {
@@ -1480,7 +1480,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 						var templ_7745c5c3_Var74 string
 						templ_7745c5c3_Var74, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d bindings", len(bindings)))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 264, Col: 50}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 264, Col: 50}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var74))
 						if templ_7745c5c3_Err != nil {
@@ -1720,7 +1720,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 											var templ_7745c5c3_Var86 string
 											templ_7745c5c3_Var86, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", b.GroupID))
 											if templ_7745c5c3_Err != nil {
-												return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 295, Col: 73}
+												return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 295, Col: 73}
 											}
 											_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var86))
 											if templ_7745c5c3_Err != nil {
@@ -1759,7 +1759,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 											var templ_7745c5c3_Var88 string
 											templ_7745c5c3_Var88, templ_7745c5c3_Err = templ.JoinStringErrs(b.DiscordRoleID)
 											if templ_7745c5c3_Err != nil {
-												return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 298, Col: 60}
+												return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 298, Col: 60}
 											}
 											_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var88))
 											if templ_7745c5c3_Err != nil {
@@ -1799,7 +1799,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 												var templ_7745c5c3_Var90 string
 												templ_7745c5c3_Var90, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d-%d", *b.RankMin, *b.RankMax))
 												if templ_7745c5c3_Err != nil {
-													return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 302, Col: 80}
+													return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 302, Col: 80}
 												}
 												_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var90))
 												if templ_7745c5c3_Err != nil {
@@ -1817,7 +1817,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 												var templ_7745c5c3_Var91 string
 												templ_7745c5c3_Var91, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", *b.RobloxRoleID))
 												if templ_7745c5c3_Err != nil {
-													return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 304, Col: 75}
+													return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 304, Col: 75}
 												}
 												_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var91))
 												if templ_7745c5c3_Err != nil {
@@ -1862,7 +1862,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 											var templ_7745c5c3_Var93 string
 											templ_7745c5c3_Var93, templ_7745c5c3_Err = templ.JoinStringErrs(b.NicknameTemplate)
 											if templ_7745c5c3_Err != nil {
-												return templ.Error{Err: templ_7745c5c3_Err, FileName: `.`, Line: 310, Col: 53}
+												return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/templates/pages/guild_detail.templ`, Line: 310, Col: 53}
 											}
 											_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var93))
 											if templ_7745c5c3_Err != nil {
@@ -1916,7 +1916,7 @@ func GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedChan
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layouts.Base(guildName+" - Datablox", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layouts.Base(guildName+" - Datablox", layouts.Nav{IsBotStaff: isBotStaff, DiscordName: discordName, DiscordAvatar: discordAvatar}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

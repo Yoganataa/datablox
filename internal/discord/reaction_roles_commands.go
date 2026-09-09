@@ -6,6 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
+	"datablox/internal/auth"
 	"datablox/internal/model"
 )
 
@@ -41,21 +42,30 @@ func reactionRoleCommands() *discordgo.ApplicationCommand {
 }
 
 func (b *Bot) handleReactionRole(ctx context.Context, i *discordgo.InteractionCreate, data discordgo.ApplicationCommandInteractionData) {
-	if !hasManageGuild(i) {
-		respondEphemeral(b.sess, i, "Need Manage Server")
-		return
-	}
 	if len(data.Options) == 0 {
 		respondEphemeral(b.sess, i, "Usage: /reactionrole add|list|remove")
 		return
 	}
 	sub := data.Options[0]
+	p := b.principalForInteraction(i)
 	switch sub.Name {
 	case "add":
+		if !auth.Can(p, auth.GuildReactionManage, auth.Resource{GuildID: i.GuildID}) {
+			respondEphemeral(b.sess, i, "You don't have permission.")
+			return
+		}
 		b.handleReactionRoleAdd(ctx, i, sub)
 	case "list":
+		if !auth.Can(p, auth.GuildReactionView, auth.Resource{GuildID: i.GuildID}) {
+			respondEphemeral(b.sess, i, "You don't have permission.")
+			return
+		}
 		b.handleReactionRoleList(ctx, i)
 	case "remove":
+		if !auth.Can(p, auth.GuildReactionManage, auth.Resource{GuildID: i.GuildID}) {
+			respondEphemeral(b.sess, i, "You don't have permission.")
+			return
+		}
 		b.handleReactionRoleRemove(ctx, i, sub)
 	default:
 		respondEphemeral(b.sess, i, "Unknown subcommand")

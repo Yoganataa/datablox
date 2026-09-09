@@ -10,8 +10,8 @@ import (
 	"datablox/internal/web/templates/layouts"
 )
 
-templ Guilds(userGuilds []model.DiscordGuild, cfgMap map[string]model.GuildConfig, gmMap map[string][]model.GuildModule, isAdmin bool, discordName, discordAvatar string) {
-	@layouts.Base("Datablox - My Servers", layouts.Nav{IsAdmin: isAdmin, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
+templ Guilds(userGuilds []model.DiscordGuild, cfgMap map[string]model.GuildConfig, gmMap map[string][]model.GuildModule, isBotStaff bool, discordName, discordAvatar string) {
+	@layouts.Base("Datablox - My Servers", layouts.Nav{IsBotStaff: isBotStaff, DiscordName: discordName, DiscordAvatar: discordAvatar}) {
 		<div class="max-w-5xl mx-auto flex flex-col gap-6">
 			<div class="flex items-center justify-between">
 				<div>

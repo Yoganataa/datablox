@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import _ "datablox/utils" // keep for TwMerge if needed
 
 type Nav struct {
-	IsAdmin       bool
+	IsBotStaff    bool
 	DiscordName   string
 	DiscordAvatar string
 	Lang          string
