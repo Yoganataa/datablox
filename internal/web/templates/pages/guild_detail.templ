@@ -80,7 +80,7 @@ templ GuildDetail(guildID, guildName, guildIcon string, memberCount int, feedCha
 							fetch('/api/guild-modules', {
 								method: 'POST',
 								credentials: 'same-origin',
-								headers: {'Content-Type':'application/json'},
+								headers: {'Content-Type':'application/json', 'X-Requested-With':'XMLHttpRequest'},
 								body: JSON.stringify({guild_id: '{ guildID }', slug: slug, enabled: !enabled})
 							}).then(r=>{ if(r.ok) location.reload(); else r.text().then(t=>alert('Failed: '+r.status+' '+t)); });
 						}

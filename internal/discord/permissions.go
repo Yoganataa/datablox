@@ -17,6 +17,7 @@ func ExtractPermissions(bits int64) auth.Permissions {
 		p.ManageRoles = true
 		p.ManageChannels = true
 		p.ManageMessages = true
+		p.ModerateMembers = true
 		p.BanMembers = true
 		p.KickMembers = true
 		return p
@@ -25,6 +26,7 @@ func ExtractPermissions(bits int64) auth.Permissions {
 	p.ManageRoles = bits&discordgo.PermissionManageRoles != 0
 	p.ManageChannels = bits&discordgo.PermissionManageChannels != 0
 	p.ManageMessages = bits&discordgo.PermissionManageMessages != 0
+	p.ModerateMembers = bits&discordgo.PermissionModerateMembers != 0
 	p.BanMembers = bits&discordgo.PermissionBanMembers != 0
 	p.KickMembers = bits&discordgo.PermissionKickMembers != 0
 	return p

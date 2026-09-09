@@ -10,19 +10,22 @@ import (
 // targetForUser builds Target for moderation target.
 // Resolves BotRole and GuildRole for target user in same guild.
 func (b *Bot) targetForUser(guildID, userID string) auth.Target {
-	botResolver := adapters.NewBotRoleResolverFromBoolMap(b.cfg.OwnerDiscordIDs, b.cfg.AdminDiscordIDs)
-	botRole := botResolver.ResolveBotRole(userID)
+	botRole := b.botRoles.ResolveBotRole(userID)
 	guildRole := auth.GuildMember
-	if guildID != "" {
+	if guildID != "" && userID != "" {
+		// Guild OwnerID is authoritative and needs no member lookup.
+		guildOwnerID := ""
+		if g, err := b.sess.Guild(guildID); err == nil && g != nil {
+			guildOwnerID = g.OwnerID
+		} else if g, err := b.sess.State.Guild(guildID); err == nil && g != nil {
+			guildOwnerID = g.OwnerID
+		}
+		if guildOwnerID != "" && guildOwnerID == userID {
+			return auth.Target{UserID: userID, GuildRole: auth.GuildOwner, BotRole: botRole}
+		}
 		var perms auth.Permissions
 		if m, err := b.sess.GuildMember(guildID, userID); err == nil && m != nil {
 			perms = ExtractPermissions(int64(m.Permissions))
-			guildOwnerID := ""
-			if g, err := b.sess.Guild(guildID); err == nil && g != nil {
-				guildOwnerID = g.OwnerID
-			} else if g, err := b.sess.State.Guild(guildID); err == nil && g != nil {
-				guildOwnerID = g.OwnerID
-			}
 			guildResolver := adapters.NewGuildResolver()
 			guildRole = guildResolver.ResolveGuildRole(guildOwnerID, userID, perms)
 		} else {
@@ -41,8 +44,7 @@ func (b *Bot) principalForInteraction(i *discordgo.InteractionCreate) auth.Princ
 	userID := getInvokerID(i)
 	guildID := i.GuildID
 
-	botResolver := adapters.NewBotRoleResolverFromBoolMap(b.cfg.OwnerDiscordIDs, b.cfg.AdminDiscordIDs)
-	botRole := botResolver.ResolveBotRole(userID)
+	botRole := b.botRoles.ResolveBotRole(userID)
 
 	var guildRole auth.GuildRole = auth.GuildMember
 	var perms auth.Permissions

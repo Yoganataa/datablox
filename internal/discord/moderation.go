@@ -114,7 +114,7 @@ func (b *Bot) handleMute(ctx context.Context, i *discordgo.InteractionCreate, da
 		respondEphemeral(b.sess, i, "Bot lacks permission to timeout members.")
 		return
 	}
-	if err := b.checkRoleHierarchy(i.GuildID, targetID); err != nil {
+	if err := b.checkRoleHierarchy(i.GuildID, targetID, false); err != nil {
 		respondEphemeral(b.sess, i, "Target is higher than or equal to bot.")
 		return
 	}
@@ -164,7 +164,7 @@ func (b *Bot) handleBan(ctx context.Context, i *discordgo.InteractionCreate, dat
 		respondEphemeral(b.sess, i, "Bot lacks permission to ban members.")
 		return
 	}
-	if err := b.checkRoleHierarchy(i.GuildID, targetID); err != nil {
+	if err := b.checkRoleHierarchy(i.GuildID, targetID, true); err != nil {
 		respondEphemeral(b.sess, i, "Target is higher than or equal to bot.")
 		return
 	}
@@ -205,7 +205,7 @@ func (b *Bot) handleKick(ctx context.Context, i *discordgo.InteractionCreate, da
 		respondEphemeral(b.sess, i, "Bot lacks permission to kick members.")
 		return
 	}
-	if err := b.checkRoleHierarchy(i.GuildID, targetID); err != nil {
+	if err := b.checkRoleHierarchy(i.GuildID, targetID, false); err != nil {
 		respondEphemeral(b.sess, i, "Target is higher than or equal to bot.")
 		return
 	}
@@ -274,14 +274,18 @@ func getInvokerID(i *discordgo.InteractionCreate) string {
 func optionUser(data *discordgo.ApplicationCommandInteractionData, name string) *discordgo.User {
 	for _, o := range data.Options {
 		if o.Name == name && o.Type == discordgo.ApplicationCommandOptionUser {
-			if u, ok := o.Value.(*discordgo.User); ok {
+			if u, ok := o.Value.(*discordgo.User); ok && u != nil {
 				return u
 			}
-			// discordgo may put User in Resolved
-			if data.Resolved != nil {
-				for _, u := range data.Resolved.Users {
-					return u
+			// discordgo carries user options as the target user ID string;
+			// resolve exactly that ID, never the first map entry.
+			if id, ok := o.Value.(string); ok && id != "" {
+				if data.Resolved != nil {
+					if u, ok := data.Resolved.Users[id]; ok {
+						return u
+					}
 				}
+				return &discordgo.User{ID: id}
 			}
 		}
 	}

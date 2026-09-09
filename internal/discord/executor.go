@@ -17,11 +17,10 @@ func (b *Bot) checkSelfTarget(executorID, targetID string) error {
 }
 
 func (b *Bot) checkBotPermissions(guildID string, required int64) error {
-	// Bot member
 	botID := b.sess.State.User.ID
-	member, err := b.sess.GuildMember(guildID, botID)
+	// Prefer cached state, fall back to a single API call.
+	member, err := b.sess.State.Member(guildID, botID)
 	if err != nil {
-		// Try via API
 		member, err = b.sess.GuildMember(guildID, botID)
 		if err != nil {
 			return fmt.Errorf("cannot get bot member")
@@ -55,7 +54,11 @@ func (b *Bot) checkBotPermissions(guildID string, required int64) error {
 	return nil
 }
 
-func (b *Bot) checkRoleHierarchy(guildID, targetID string) error {
+// checkRoleHierarchy ensures the bot outranks the target.
+// allowAbsent controls ban-by-ID semantics: ban permits absent targets
+// (Discord allows banning users outside the guild); mute/kick require
+// the target to be present, so absent targets are denied.
+func (b *Bot) checkRoleHierarchy(guildID, targetID string, allowAbsent bool) error {
 	guild, err := b.sess.Guild(guildID)
 	if err != nil {
 		if g, err2 := b.sess.State.Guild(guildID); err2 == nil {
@@ -75,8 +78,11 @@ func (b *Bot) checkRoleHierarchy(guildID, targetID string) error {
 	}
 	targetMember, err := b.sess.GuildMember(guildID, targetID)
 	if err != nil {
-		// If target not in guild (for ban), hierarchy not needed
-		return nil
+		// Absent target: only ban-by-ID may skip the hierarchy check.
+		if allowAbsent {
+			return nil
+		}
+		return fmt.Errorf("target not in guild")
 	}
 	botPos := highestRolePosition(guild, botMember.Roles)
 	targetPos := highestRolePosition(guild, targetMember.Roles)

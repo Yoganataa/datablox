@@ -33,14 +33,17 @@ type pendingOAuth struct {
 }
 
 type Server struct {
-	cfg     *config.Config
-	store   store.Store
-	log     *slog.Logger
-	discord *discordgo.Session
-	verify  *service.VerifyService
-	mux     *http.ServeMux
-	pending map[string]pendingOAuth
-	mu      sync.Mutex
+	cfg      *config.Config
+	store    store.Store
+	log      *slog.Logger
+	discord  *discordgo.Session
+	verify   *service.VerifyService
+	mux      *http.ServeMux
+	pending  map[string]pendingOAuth
+	mu       sync.Mutex
+	sessions map[string]webSession
+	sessMu   sync.Mutex
+	botRoles *adapters.BotRoleResolver
 }
 
 func New(cfg *config.Config, st store.Store, log *slog.Logger, discord *discordgo.Session) (*Server, error) {
@@ -49,7 +52,7 @@ func New(cfg *config.Config, st store.Store, log *slog.Logger, discord *discordg
 	if discord != nil {
 		verify = &service.VerifyService{Store: st, Discord: discord, Client: rc}
 	}
-	s := &Server{cfg: cfg, store: st, log: log, discord: discord, verify: verify, mux: http.NewServeMux(), pending: make(map[string]pendingOAuth)}
+	s := &Server{cfg: cfg, store: st, log: log, discord: discord, verify: verify, mux: http.NewServeMux(), pending: make(map[string]pendingOAuth), sessions: make(map[string]webSession), botRoles: adapters.NewBotRoleResolverFromBoolMap(cfg.OwnerDiscordIDs, cfg.AdminDiscordIDs)}
 	s.routes()
 	return s, nil
 }
@@ -120,11 +123,11 @@ func (s *Server) discordAvatar(r *http.Request) string {
 // Display-only: backs the template isBotStaff flag (super-admin banner). Never a gate;
 // all authorization decisions go through auth.Can()/CanTarget().
 func (s *Server) navBotStaff(r *http.Request) bool {
-	c, err := r.Cookie("discord_id")
-	if err != nil || c.Value == "" {
+	sess, ok := s.getSession(r)
+	if !ok {
 		return false
 	}
-	br := adapters.NewBotRoleResolverFromBoolMap(s.cfg.OwnerDiscordIDs, s.cfg.AdminDiscordIDs).ResolveBotRole(c.Value)
+	br := s.botRoles.ResolveBotRole(sess.DiscordID)
 	return br == auth.BotOwner || br == auth.BotAdmin
 }
 
@@ -132,19 +135,18 @@ func (s *Server) cookieSecure() bool {
 	return strings.HasPrefix(s.cfg.WebURL, "https://")
 }
 func (s *Server) principalForGuild(r *http.Request, guildID string) (auth.Principal, bool) {
-	c, err := r.Cookie("discord_id")
-	if err != nil || c.Value == "" {
+	sess, ok := s.getSession(r)
+	if !ok {
 		return auth.Principal{}, false
 	}
-	userID := c.Value
-	// BotRole from config
-	botResolver := adapters.NewBotRoleResolverFromBoolMap(s.cfg.OwnerDiscordIDs, s.cfg.AdminDiscordIDs)
-	botRole := botResolver.ResolveBotRole(userID)
+	userID := sess.DiscordID
+	// BotRole from config (cached resolver, config immutable after startup)
+	botRole := s.botRoles.ResolveBotRole(userID)
 	// GuildRole + Permissions from Discord
 	var guildOwnerID string
 	var permsBits int64
-	if tok, err := r.Cookie("discord_token"); err == nil && tok.Value != "" {
-		for _, g := range s.fetchUserGuilds(tok.Value) {
+	if sess.DiscordToken != "" {
+		for _, g := range s.fetchUserGuilds(sess.DiscordToken) {
 			if g.ID == guildID {
 				guildOwnerID = ""
 				if g.Owner {
@@ -261,7 +263,7 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
-	if _, err := r.Cookie("discord_id"); err != nil {
+	if _, ok := s.getSession(r); !ok {
 		http.Redirect(w, r, "/auth/discord/login", http.StatusFound)
 		return
 	}
@@ -269,14 +271,12 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGuilds(w http.ResponseWriter, r *http.Request) {
-	if _, err := r.Cookie("discord_id"); err != nil {
+	sess, ok := s.getSession(r)
+	if !ok {
 		http.Redirect(w, r, "/auth/discord/login", http.StatusFound)
 		return
 	}
-	tok := ""
-	if c, err := r.Cookie("discord_token"); err == nil {
-		tok = c.Value
-	}
+	tok := sess.DiscordToken
 	userGuilds := s.fetchUserGuilds(tok)
 	// Build guilds where principal can view panel (per-guild Can, not a global gate)
 	adminIDs := make(map[string]bool)
@@ -320,7 +320,7 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	if _, err := r.Cookie("discord_id"); err != nil {
+	if _, ok := s.getSession(r); !ok {
 		http.Redirect(w, r, "/auth/discord/login", http.StatusFound)
 		return
 	}
@@ -356,8 +356,8 @@ func (s *Server) handleGuildDetail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if guildName == guildID {
-		if c, err := r.Cookie("discord_token"); err == nil {
-			for _, g := range s.fetchUserGuilds(c.Value) {
+		if sess, ok := s.getSession(r); ok && sess.DiscordToken != "" {
+			for _, g := range s.fetchUserGuilds(sess.DiscordToken) {
 				if g.ID == guildID {
 					guildName = g.Name
 					guildIcon = g.Icon
@@ -413,8 +413,8 @@ func (s *Server) handleVerifyPage(w http.ResponseWriter, r *http.Request) {
 	verifiedParam := r.URL.Query().Get("verified") == "1"
 	verified := false
 	if verifiedParam {
-		if c, err := r.Cookie("discord_id"); err == nil && c.Value != "" {
-			if _, err := s.store.GetVerifiedUser(r.Context(), c.Value); err == nil {
+		if sess, ok := s.getSession(r); ok {
+			if _, err := s.store.GetVerifiedUser(r.Context(), sess.DiscordID); err == nil {
 				verified = true
 			}
 		}
@@ -449,7 +449,7 @@ func (s *Server) handleTerms(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListGuilds(w http.ResponseWriter, r *http.Request) {
-	if _, err := r.Cookie("discord_id"); err != nil {
+	if _, ok := s.getSession(r); !ok {
 		http.Error(w, "admin only", http.StatusUnauthorized)
 		return
 	}
@@ -489,6 +489,9 @@ func (s *Server) handleBindings(w http.ResponseWriter, r *http.Request) {
 		bindings, _ := s.store.ListBindings(r.Context(), guildID)
 		_ = json.NewEncoder(w).Encode(bindings)
 	case http.MethodPost:
+		if !requireCSRF(w, r) {
+			return
+		}
 		var b model.GuildBinding
 		if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -506,6 +509,9 @@ func (s *Server) handleBindings(w http.ResponseWriter, r *http.Request) {
 		}
 		_ = json.NewEncoder(w).Encode(map[string]int64{"id": id})
 	case http.MethodDelete:
+		if !requireCSRF(w, r) {
+			return
+		}
 		guildID := r.URL.Query().Get("guild_id")
 		idStr := r.URL.Query().Get("id")
 		var id int64
@@ -542,6 +548,9 @@ func (s *Server) handleReactionRoles(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(roles)
 	case http.MethodPost:
+		if !requireCSRF(w, r) {
+			return
+		}
 		var rr model.ReactionRole
 		if err := json.NewDecoder(r.Body).Decode(&rr); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -563,6 +572,9 @@ func (s *Server) handleReactionRoles(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]int64{"id": id})
 	case http.MethodDelete:
+		if !requireCSRF(w, r) {
+			return
+		}
 		guildID := r.URL.Query().Get("guild_id")
 		idStr := r.URL.Query().Get("id")
 		var id int64
@@ -595,6 +607,9 @@ func (s *Server) handleAutomod(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(cfg)
 	case http.MethodPost:
+		if !requireCSRF(w, r) {
+			return
+		}
 		var cfg model.AutomodConfig
 		if err := json.NewDecoder(r.Body).Decode(&cfg); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -625,6 +640,9 @@ func (s *Server) handleWelcome(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(cfg)
 	case http.MethodPost:
+		if !requireCSRF(w, r) {
+			return
+		}
 		var cfg model.WelcomeConfig
 		if err := json.NewDecoder(r.Body).Decode(&cfg); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -667,10 +685,18 @@ func (s *Server) handleGuildModules(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "guild_id required", http.StatusBadRequest)
 			return
 		}
+		p, ok := s.principalForGuild(r, gid)
+		if !ok || !auth.Can(p, auth.GuildModulesView, auth.Resource{GuildID: gid}) {
+			http.Error(w, "not admin of this guild", http.StatusForbidden)
+			return
+		}
 		gms, _ := s.store.ListGuildModules(r.Context(), gid)
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(gms)
 	case http.MethodPost:
+		if !requireCSRF(w, r) {
+			return
+		}
 		var req struct {
 			GuildID string `json:"guild_id"`
 			Slug    string `json:"slug"`
@@ -792,15 +818,22 @@ func (s *Server) handleDiscordCallback(w http.ResponseWriter, r *http.Request) {
 		}
 		avatarURL = fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.%s", user.ID, user.Avatar, ext)
 	}
-	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: user.ID, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	sessID, err := s.createSession(user.ID, tok.AccessToken)
+	if err != nil {
+		http.Error(w, "failed to create session", http.StatusInternalServerError)
+		return
+	}
+	s.setSessionCookie(w, sessID)
 	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: user.Username, Path: "/", MaxAge: 86400 * 7, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.SetCookie(w, &http.Cookie{Name: "discord_avatar", Value: avatarURL, Path: "/", MaxAge: 86400 * 7, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
-	http.SetCookie(w, &http.Cookie{Name: "discord_token", Value: tok.AccessToken, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	// Clear any legacy identity cookies from older versions.
+	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: "", Path: "/", MaxAge: -1, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	http.SetCookie(w, &http.Cookie{Name: "discord_token", Value: "", Path: "/", MaxAge: -1, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.Redirect(w, r, "/dashboard?discord=ok", http.StatusFound)
 }
 
 func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+	s.destroySession(w, r)
 	http.SetCookie(w, &http.Cookie{Name: "discord_name", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.SetCookie(w, &http.Cookie{Name: "discord_token", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
 	http.SetCookie(w, &http.Cookie{Name: "discord_avatar", Value: "", Path: "/", MaxAge: -1, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
@@ -813,14 +846,12 @@ func (s *Server) handleRobloxLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	discordID := ""
-	if c, err := r.Cookie("discord_id"); err == nil {
-		discordID = c.Value
+	if sess, ok := s.getSession(r); ok {
+		discordID = sess.DiscordID
 	}
 	if discordID == "" {
-		discordID = r.URL.Query().Get("discord_id")
-	}
-	if discordID != "" {
-		http.SetCookie(w, &http.Cookie{Name: "discord_id", Value: discordID, Path: "/", MaxAge: 86400 * 7, HttpOnly: true, Secure: s.cookieSecure(), SameSite: http.SameSiteLaxMode})
+		http.Redirect(w, r, "/auth/discord/login", http.StatusFound)
+		return
 	}
 	guildID := r.URL.Query().Get("guild_id")
 	if guildID == "" {
@@ -938,8 +969,8 @@ func (s *Server) handleRobloxCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	discordID := val.DiscordID
-	if c, err := r.Cookie("discord_id"); err == nil && discordID == "" {
-		discordID = c.Value
+	if sess, ok := s.getSession(r); ok && sess.DiscordID != "" {
+		discordID = sess.DiscordID
 	}
 	if discordID == "" {
 		http.Error(w, "Discord not linked. Open this link from the Discord Verify button (it includes your Discord ID).", http.StatusBadRequest)

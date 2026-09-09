@@ -8,6 +8,20 @@ func testPrincipal(botRole BotRole, guildRole GuildRole, guildID string) Princip
 		GuildID:   guildID,
 		BotRole:   botRole,
 		GuildRole: guildRole,
+		Permissions: Permissions{
+			ManageGuild: true, ManageRoles: true, ManageMessages: true,
+			ModerateMembers: true, BanMembers: true, KickMembers: true,
+		},
+	}
+}
+
+func testPrincipalPerms(botRole BotRole, guildRole GuildRole, guildID string, perms Permissions) Principal {
+	return Principal{
+		UserID:      "executor",
+		GuildID:     guildID,
+		BotRole:     botRole,
+		GuildRole:   guildRole,
+		Permissions: perms,
 	}
 }
 
@@ -79,5 +93,45 @@ func TestCanCrossGuildDeny(t *testing.T) {
 	var unknown Action = "unknown.action"
 	if Can(p, unknown, Resource{GuildID: "guild-a"}) {
 		t.Errorf("unknown action should DENY")
+	}
+}
+
+func TestCanPermissionGating(t *testing.T) {
+	g := "g1"
+	res := Resource{GuildID: g}
+	full := Permissions{
+		ManageGuild: true, ManageRoles: true, ManageMessages: true,
+		ModerateMembers: true, BanMembers: true, KickMembers: true,
+	}
+	none := Permissions{}
+	cases := []struct {
+		name   string
+		p      Principal
+		action Action
+		want   bool
+	}{
+		{"GuildAdmin+Ban ban ALLOW", testPrincipalPerms(BotNone, GuildAdmin, g, Permissions{BanMembers: true}), ModerationBan, true},
+		{"GuildAdmin no perms ban DENY", testPrincipalPerms(BotNone, GuildAdmin, g, none), ModerationBan, false},
+		{"GuildAdmin+Kick kick ALLOW", testPrincipalPerms(BotNone, GuildAdmin, g, Permissions{KickMembers: true}), ModerationKick, true},
+		{"GuildAdmin no perms kick DENY", testPrincipalPerms(BotNone, GuildAdmin, g, none), ModerationKick, false},
+		{"GuildAdmin+Moderate mute ALLOW", testPrincipalPerms(BotNone, GuildAdmin, g, Permissions{ModerateMembers: true}), ModerationMute, true},
+		{"GuildAdmin no perms mute DENY", testPrincipalPerms(BotNone, GuildAdmin, g, none), ModerationMute, false},
+		{"GuildAdmin+ManageMessages purge ALLOW", testPrincipalPerms(BotNone, GuildAdmin, g, Permissions{ManageMessages: true}), ModerationPurge, true},
+		{"GuildAdmin no perms purge DENY", testPrincipalPerms(BotNone, GuildAdmin, g, none), ModerationPurge, false},
+		{"GuildAdmin+ManageGuild modules.manage ALLOW", testPrincipalPerms(BotNone, GuildAdmin, g, Permissions{ManageGuild: true}), GuildModulesManage, true},
+		{"GuildAdmin no perms modules.manage DENY", testPrincipalPerms(BotNone, GuildAdmin, g, none), GuildModulesManage, false},
+		{"GuildAdmin+ManageRoles reaction.manage ALLOW", testPrincipalPerms(BotNone, GuildAdmin, g, Permissions{ManageRoles: true}), GuildReactionManage, true},
+		{"GuildAdmin+ManageGuild reaction.manage DENY", testPrincipalPerms(BotNone, GuildAdmin, g, Permissions{ManageGuild: true}), GuildReactionManage, false},
+		{"GuildOwner no perms ban ALLOW (owner semantics)", testPrincipalPerms(BotNone, GuildOwner, g, none), ModerationBan, true},
+		{"GuildOwner no perms modules.manage ALLOW", testPrincipalPerms(BotNone, GuildOwner, g, none), GuildModulesManage, true},
+		{"GuildAdmin no perms panel.view ALLOW", testPrincipalPerms(BotNone, GuildAdmin, g, none), GuildPanelView, true},
+		{"GuildAdmin no perms warn ALLOW (DB-only)", testPrincipalPerms(BotNone, GuildAdmin, g, none), ModerationWarn, true},
+		{"BotAdmin no perms ban ALLOW (staff bypass)", testPrincipalPerms(BotAdmin, GuildMember, g, none), ModerationBan, true},
+		{"Member full perms ban DENY", testPrincipalPerms(BotNone, GuildMember, g, full), ModerationBan, false},
+	}
+	for _, tc := range cases {
+		if got := Can(tc.p, tc.action, res); got != tc.want {
+			t.Errorf("%s: Can(%s) = %v, want %v", tc.name, tc.action, got, tc.want)
+		}
 	}
 }

@@ -8,16 +8,18 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
+	"datablox/internal/auth/adapters"
 	"datablox/internal/config"
 	"datablox/internal/service"
 )
 
 type Bot struct {
-	cfg    *config.Config
-	log    *slog.Logger
-	svc    *service.ExperienceService
-	sess   *discordgo.Session
-	cmdIDs map[string]string
+	cfg      *config.Config
+	log      *slog.Logger
+	svc      *service.ExperienceService
+	sess     *discordgo.Session
+	cmdIDs   map[string]string
+	botRoles *adapters.BotRoleResolver
 }
 
 func New(cfg *config.Config, log *slog.Logger, svc *service.ExperienceService) (*Bot, error) {
@@ -27,11 +29,12 @@ func New(cfg *config.Config, log *slog.Logger, svc *service.ExperienceService) (
 	}
 	sess.Identify.Intents = discordgo.IntentsGuilds | discordgo.IntentsGuildMembers | discordgo.IntentsGuildMessages | discordgo.IntentsGuildMessageReactions | discordgo.IntentsMessageContent
 	return &Bot{
-		cfg:    cfg,
-		log:    log,
-		svc:    svc,
-		sess:   sess,
-		cmdIDs: map[string]string{},
+		cfg:      cfg,
+		log:      log,
+		svc:      svc,
+		sess:     sess,
+		cmdIDs:   map[string]string{},
+		botRoles: adapters.NewBotRoleResolverFromBoolMap(cfg.OwnerDiscordIDs, cfg.AdminDiscordIDs),
 	}, nil
 }
 
