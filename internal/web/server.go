@@ -919,8 +919,9 @@ func (s *Server) handleRobloxCallback(w http.ResponseWriter, r *http.Request) {
 			verifier = c.Value
 		}
 	}
-	// make val available for discordID fallback below
-	val = pendingOAuth{Verifier: verifier, DiscordID: discordIDFromState}
+	// Preserve the server-side OAuth state binding (especially GuildID, bound at
+	// login time); never fall back to client input for it.
+	val = pendingOAuth{Verifier: verifier, DiscordID: discordIDFromState, GuildID: val.GuildID}
 
 	redirectURI := strings.TrimRight(s.cfg.WebURL, "/") + "/auth/roblox/callback"
 	data := url.Values{}
