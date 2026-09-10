@@ -65,40 +65,35 @@ func (svc *ExperienceService) AddExperience(ctx context.Context, rawURL, genre s
 
 	// Parallel fetch visits/votes + thumbnail after universeID known (details already fetched)
 	var thumb string
-	var votes map[int64]struct{ Up, Down int64 }
+	var thumbOK bool
+	var up, down int64
+	var votesOK bool
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		thumb, _ = svc.Client.GetThumbnailURL(ctx, universeID)
+		if t, err := svc.Client.GetThumbnailURL(ctx, universeID); err == nil && t != "" {
+			thumb, thumbOK = t, true
+		}
 	}()
 	go func() {
 		defer wg.Done()
-		votes, _ = svc.Client.GetVotes(ctx, universeID)
+		if vs, err := svc.Client.GetVotes(ctx, universeID); err == nil {
+			if v, ok := vs[universeID]; ok {
+				up, down, votesOK = v.Up, v.Down, true
+			}
+		}
 	}()
 	wg.Wait()
-	v := votes[universeID]
 
 	exp := model.Experience{
-		UniverseID:      universeID,
-		PlaceID:         placeID,
-		Name:            d.Name,
-		Description:     d.Description,
-		CreatorID:       d.Creator.ID,
-		CreatorName:     d.Creator.Name,
-		Genre:           genre,
-		MaxPlayers:      d.MaxPlayers,
-		Playing:         d.Playing,
-		Visits:          d.Visits,
-		UpVotes:         v.Up,
-		DownVotes:       v.Down,
-		ThumbnailURL:    thumb,
-		RobloxURL:       fmt.Sprintf("https://www.roblox.com/games/%d", placeID),
-		RobloxCreated:   parseRobloxTime(d.Created),
-		RobloxUpdated:   parseRobloxTime(d.Updated),
-		LastRefreshedAt: time.Now().UTC(),
-		CreatedAt:       time.Now().UTC(),
+		UniverseID: universeID,
+		PlaceID:    placeID,
+		Genre:      genre,
+		RobloxURL:  fmt.Sprintf("https://www.roblox.com/games/%d", placeID),
+		CreatedAt:  time.Now().UTC(),
 	}
+	mergeEnrichment(&exp, d, up, down, votesOK, thumb, thumbOK)
 
 	if err := svc.Store.UpsertExperience(ctx, exp); err != nil {
 		return nil, err
@@ -117,30 +112,33 @@ func (svc *ExperienceService) RefreshOne(ctx context.Context, universeID int64) 
 	}
 	d := details[0]
 	var thumb string
-	var votes map[int64]struct{ Up, Down int64 }
+	var thumbOK bool
+	var up, down int64
+	var votesOK bool
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go func() { defer wg.Done(); thumb, _ = svc.Client.GetThumbnailURL(ctx, universeID) }()
-	go func() { defer wg.Done(); votes, _ = svc.Client.GetVotes(ctx, universeID) }()
+	go func() {
+		defer wg.Done()
+		if t, err := svc.Client.GetThumbnailURL(ctx, universeID); err == nil && t != "" {
+			thumb, thumbOK = t, true
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if vs, err := svc.Client.GetVotes(ctx, universeID); err == nil {
+			if v, ok := vs[universeID]; ok {
+				up, down, votesOK = v.Up, v.Down, true
+			}
+		}
+	}()
 	wg.Wait()
-	v := votes[universeID]
 
 	existing, err := svc.Store.GetByUniverseID(ctx, universeID)
 	if err != nil {
 		return model.Experience{}, err
 	}
 
-	existing.Name = d.Name
-	existing.Description = d.Description
-	existing.Playing = d.Playing
-	existing.MaxPlayers = d.MaxPlayers
-	existing.Visits = d.Visits
-	existing.UpVotes = v.Up
-	existing.DownVotes = v.Down
-	existing.ThumbnailURL = thumb
-	existing.RobloxCreated = parseRobloxTime(d.Created)
-	existing.RobloxUpdated = parseRobloxTime(d.Updated)
-	existing.LastRefreshedAt = time.Now().UTC()
+	mergeEnrichment(&existing, d, up, down, votesOK, thumb, thumbOK)
 
 	if err := svc.Store.UpsertExperience(ctx, existing); err != nil {
 		return model.Experience{}, err
@@ -186,23 +184,20 @@ func (svc *ExperienceService) RefreshAll(ctx context.Context) (int, error) {
 		}
 		votes, _ := svc.Client.GetVotes(ctx, batch...)
 		for _, d := range details {
-			thumb, _ := svc.Client.GetThumbnailURL(ctx, d.ID)
-			v := votes[d.ID]
+			thumb, thumbOK := "", false
+			if t, err := svc.Client.GetThumbnailURL(ctx, d.ID); err == nil && t != "" {
+				thumb, thumbOK = t, true
+			}
+			var up, down int64
+			votesOK := false
+			if v, ok := votes[d.ID]; ok {
+				up, down, votesOK = v.Up, v.Down, true
+			}
 			existing, err := svc.Store.GetByUniverseID(ctx, d.ID)
 			if err != nil {
 				continue
 			}
-			existing.Name = d.Name
-			existing.Description = d.Description
-			existing.Playing = d.Playing
-			existing.MaxPlayers = d.MaxPlayers
-			existing.Visits = d.Visits
-			existing.UpVotes = v.Up
-			existing.DownVotes = v.Down
-			existing.ThumbnailURL = thumb
-			existing.RobloxCreated = parseRobloxTime(d.Created)
-			existing.RobloxUpdated = parseRobloxTime(d.Updated)
-			existing.LastRefreshedAt = time.Now().UTC()
+			mergeEnrichment(&existing, d, up, down, votesOK, thumb, thumbOK)
 			if err := svc.Store.UpsertExperience(ctx, existing); err == nil {
 				updated++
 			}
@@ -225,6 +220,33 @@ func (svc *ExperienceService) SearchNames(ctx context.Context, query string, lim
 		out = append(out, e.Name)
 	}
 	return out
+}
+
+// mergeEnrichment overlays freshly fetched Roblox data onto dst, preserving
+// prior values for any enrichment fetch that failed. A partial API outage must
+// never zero stored votes, thumbnails, or timestamps.
+func mergeEnrichment(dst *model.Experience, d roblox.GameDetail, up, down int64, votesOK bool, thumb string, thumbOK bool) {
+	dst.Name = d.Name
+	dst.Description = d.Description
+	dst.Playing = d.Playing
+	dst.MaxPlayers = d.MaxPlayers
+	dst.Visits = d.Visits
+	dst.CreatorID = d.Creator.ID
+	dst.CreatorName = d.Creator.Name
+	if votesOK {
+		dst.UpVotes = up
+		dst.DownVotes = down
+	}
+	if thumbOK {
+		dst.ThumbnailURL = thumb
+	}
+	if t := parseRobloxTime(d.Created); !t.IsZero() {
+		dst.RobloxCreated = t
+	}
+	if t := parseRobloxTime(d.Updated); !t.IsZero() {
+		dst.RobloxUpdated = t
+	}
+	dst.LastRefreshedAt = time.Now().UTC()
 }
 
 func parseRobloxTime(s string) time.Time {
