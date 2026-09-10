@@ -52,13 +52,11 @@ func canCapability(p Principal, action Action) bool {
 	}
 }
 
-// guildPerm gates GuildAdmin on the required Discord permission.
-// BotAdmin bypasses (global staff) and GuildOwner bypasses (Discord owner
-// semantics: the owner implicitly holds every permission).
+// guildPerm gates guild-scoped manage/moderation actions on GuildRole plus the
+// required Discord permission. GuildOwner bypasses (Discord owner semantics:
+// the owner implicitly holds every permission). BotRole is deliberately not
+// consulted here — staff status is not a Discord capability.
 func guildPerm(p Principal, need func(Permissions) bool) bool {
-	if p.BotRole == BotAdmin {
-		return true
-	}
 	if p.GuildRole == GuildOwner {
 		return true
 	}
